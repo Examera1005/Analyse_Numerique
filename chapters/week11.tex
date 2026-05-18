@@ -1,0 +1,302 @@
+\section{Équation de la chaleur-Semaine 11}
+
+\begin{definition}[Le problème de la chaleur 1D]
+Trouver $T : [0, L] \times \mathbb{R}_+ \to \mathbb{R}$ telle que :
+\begin{align}
+    \rho c_p \frac{\partial T}{\partial t}(x,t) - k \frac{\partial^2 T}{\partial x^2}(x,t) &= f(x,t), \quad 0 < x < L, \ t > 0 \\
+    T(0,t) = T(L,t) &= 0 \quad \text{(Conditions aux limites)} \label{eq:cl} \\
+    T(x,0) &= w(x), \quad 0 < x < L \quad \text{(Condition initiale)} \label{eq:ci}
+\end{align}
+\end{definition}
+
+\begin{center}
+\begin{tikzpicture}[xscale=1.5]
+    % Barre
+    \draw[thick] (0,0) -- (6,0);
+    \fill[gray!20] (0,-0.1) rectangle (6,0.1);
+    \draw[thick] (0,-0.2) -- (0,0.2) node[above] {$0$};
+    \draw[thick] (6,-0.2) -- (6,0.2) node[above] {$L$};
+    \node[below] at (3, -0.2) {Axe $x$};
+    
+    % Source de chaleur
+    \node[algofr] at (3, 0.8) {Source de chaleur $f(x,t)$};
+    \foreach \x in {1.5, 3, 4.5} {
+        \draw[->, algofr, thick] (\x, 0.6) -- (\x, 0.15);
+    }
+    
+    % Conditions
+    \node[deffr, align=center] at (0, -0.6) {$T=0$};
+    \node[deffr, align=center] at (6, -0.6) {$T=0$};
+\end{tikzpicture}
+\end{center}
+
+\begin{explication}[Données du problème]
+\begin{itemize}
+    \item $T(x,t)$ : Température au point $x$ et au temps $t$.
+    \item $w(x)$ : Température initiale connue.
+    \item $\rho > 0$ : Densité.
+    \item $c_p > 0$ : Chaleur spécifique.
+    \item $k > 0$ : Conductivité thermique.
+    \item $f$ : Source de chaleur (Puissance par unité de longueur).
+\end{itemize}
+On cherche la température $T(x,t)$ pour $x \in [0,L]$ et $t > 0$.
+\end{explication}
+
+\begin{remarque}[Principe de conservation]
+L'équation de la chaleur traduit le principe de conservation de l'énergie thermique. Si on intègre l'équation par rapport à $x$ entre $0$ et $L$, on obtient :
+\[
+    \underbrace{\int_0^L \rho c_p \frac{\partial T}{\partial t}(x,t) dx}_{\text{Variation de l'énergie thermique}} - \underbrace{\int_0^L k \frac{\partial^2 T}{\partial x^2}(x,t) dx}_{\text{Flux de chaleur}} = \underbrace{\int_0^L f(x,t) dx}_{\text{Puissance thermique}}
+\]
+Ce qui se réécrit :
+\[
+    \frac{d}{dt} \int_0^L \rho c_p T(x,t) dx - \left[ k \frac{\partial T}{\partial x}(x,t) \right]_{x=0}^L = \int_0^L f(x,t) dx
+\]
+\end{remarque}
+
+\subsection{Problème modèle}
+
+Quitte à diviser toute l'équation par $\rho c_p$, on peut se ramener à considérer l'équation normalisée suivante (en redéfinissant $k \leftarrow k/(\rho c_p)$ et $f \leftarrow f/(\rho c_p)$) :
+
+\begin{equation}
+\begin{cases}
+    \frac{\partial u}{\partial t}(x,t) - k \frac{\partial^2 u}{\partial x^2}(x,t) = f(x,t), & 0 < x < L, \ t > 0 \\
+    u(0,t) = u(L,t) = 0, & t > 0 \\
+    u(x,0) = w(x), & 0 < x < L
+\end{cases}
+\end{equation}
+
+\begin{exemple}[Solution exacte analytique]
+Si $f(x,t) = 0$ et la condition initiale est $w(x) = \sin\left(\frac{\pi x}{L}\right)$, alors la solution exacte est donnée par :
+\[
+    u(x,t) = \sin\left(\frac{\pi x}{L}\right) \exp\left(-\frac{k \pi^2}{L^2} t\right)
+\]
+\end{exemple}
+
+\begin{proposition}[Principe du maximum continu]
+Supposons $f(x,t) = 0$ et soit $u$ la solution de l'équation homogène. Alors :
+\begin{enumerate}
+    \item Si $w(x) \ge 0$, alors $u(x,t) \ge 0$ pour tout $t \ge 0$.
+    \item $\max_{x \in [0,L]} u(x,t) \le \max_{x \in [0,L]} w(x)$.
+\end{enumerate}
+\end{proposition}
+
+\begin{center}
+\begin{tikzpicture}
+    \begin{axis}[
+        axis lines = middle,
+        xlabel = {$x$},
+        ylabel = {$u(x,t)$},
+        xmin=-0.1, xmax=1.1,
+        ymin=-0.1, ymax=1.5,
+        xtick={1}, xticklabels={$L$},
+        ytick=\empty,
+        width=10cm, height=6cm,
+        legend pos=north east,
+        legend style={draw=none, fill=none}
+    ]
+    % Condition initiale w(x)
+    \addplot[domain=0:1, samples=100, thick, black] {4*x*(1-x) + 0.2*sin(180*x)};
+    \addlegendentry{$u(x,0) = w(x)$}
+    
+    % Solution u(x,t)
+    \addplot[domain=0:1, samples=100, thick, deffr] {2.5*x*(1-x) + 0.1*sin(180*x)};
+    \addlegendentry{$u(x,t)$ pour $t > 0$}
+    
+    \node[below left] at (axis cs:0,0) {$0$};
+    \node[above, text=black] at (axis cs:0.5, 1.25) {$u(x,0) \ge u(x,t)$};
+    \end{axis}
+\end{tikzpicture}
+\end{center}
+
+\subsection{Approximation numérique}
+
+On cherche à approximer la solution $u$ de l'EDP pour $(x,t) \in [0,L] \times [0,T]$.
+Pour cela, on discrétise le domaine spatio-temporel.
+
+\textbf{Discrétisation en espace :}
+$0 = x_0 < x_1 < \dots < x_{N+1} = L$, avec un pas $h = \frac{L}{N+1}$ tel que $x_i = i \cdot h$.
+
+\textbf{Discrétisation en temps :}
+$0 = t_0 < t_1 < \dots < t_M = T$, avec un pas $\tau = \frac{T}{M}$ tel que $t_n = n \cdot \tau$.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.5]
+    \draw[->, thick] (-0.2,0) -- (5.5,0) node[right] {$x$};
+    \draw[->, thick] (0,-0.2) -- (0,3.5) node[above] {$t$};
+    
+    % Grid lines
+    \foreach \x in {1,2,3,4} \draw[gray!50, very thin] (\x,0) -- (\x,3);
+    \foreach \y in {0.6,1.2,1.8,2.4,3.0} \draw[gray!50, very thin] (0,\y) -- (5,\y);
+    
+    % Nodes X
+    \foreach \x in {0,1,2,3,4,5} \draw[thick] (\x,0.05) -- (\x,-0.05);
+    \node[below] at (0,0) {$0$};
+    \node[below] at (1,0) {$x_1$};
+    \node[below] at (2,0) {$x_2$};
+    \node[below] at (3,0) {$\dots$};
+    \node[below] at (4,0) {$x_N$};
+    \node[below, align=center] at (5,0) {$L$\\$=x_{N+1}$};
+    
+    % Nodes T
+    \foreach \y in {0.6,1.2,1.8,2.4,3.0} \draw[thick] (0.05,\y) -- (-0.05,\y);
+    \node[left] at (0,0.6) {$t_1$};
+    \node[left] at (0,1.2) {$t_2$};
+    \node[left] at (0,1.8) {$\dots$};
+    \node[left] at (0,3.0) {$T = t_M$};
+
+    % Indication condition initiale
+    \draw[<-, thmfr, thick] (4.5,0.1) -- (5, 0.8) node[right, align=left] {$u(x,0)$ connu\\(Condition initiale)};
+\end{tikzpicture}
+\end{center}
+
+On cherche à trouver des approximations $u_i^n \approx u(x_i, t_n)$ avec l'indice $n$ pour le temps et l'indice $i$ pour l'espace, pour $i=1,\dots,N$ et $n=1,\dots,M$.
+
+\textbf{Initialisation :}
+On connaît la condition initiale $u(x_i, t_0) = u(x_i, 0) = w(x_i)$ pour $i=1,\dots,N$.
+On pose donc : $u_i^0 = w(x_i)$.
+
+\textbf{Question :} Comment calculer $u_i^{n+1}$ si on connaît les valeurs au pas de temps précédent $u_i^n$ ?
+
+\subsubsection{Schéma d'Euler progressif (explicite)}
+
+On fixe $n$ et on réécrit l'équation de la chaleur évaluée au point $(x_i, t_n)$ :
+\[
+    \frac{\partial u}{\partial t}(x_i,t_n) - k \frac{\partial^2 u}{\partial x^2}(x_i,t_n) = f(x_i,t_n)
+\]
+On approche les dérivées par différences finies (progressives en temps, centrées en espace) :
+\[
+    \underbrace{\frac{u(x_i, t_{n+1}) - u(x_i, t_n)}{\tau}}_{\text{Différences finies progressives}} - k \underbrace{\frac{u(x_{i+1}, t_n) - 2u(x_i, t_n) + u(x_{i-1}, t_n)}{h^2}}_{\text{Différences finies centrées}} = f(x_i, t_n) + \mathcal{O}(\tau + h^2)
+\]
+En remplaçant la solution exacte $u(x_i, t_n)$ par notre approximation numérique $u_i^n$ et en tronquant l'erreur $\mathcal{O}(\tau + h^2)$, on obtient le schéma explicite suivant :
+
+\begin{algorithme}[Méthode à un pas en temps (Euler Explicite)]
+\begin{equation}
+\begin{cases}
+    \frac{u_i^{n+1} - u_i^n}{\tau} - k \frac{u_{i+1}^n - 2u_i^n + u_{i-1}^n}{h^2} = f(x_i, t_n) \\
+    u_0^n = u_{N+1}^n = 0 \quad \text{(Conditions aux limites)}
+\end{cases}
+\end{equation}
+En isolant $u_i^{n+1}$, la relation de récurrence devient :
+\[
+    u_i^{n+1} = \left( 1 - \frac{2k\tau}{h^2} \right) u_i^n + \frac{k\tau}{h^2} \left( u_{i+1}^n + u_{i-1}^n \right) + \tau f(x_i, t_n)
+\]
+\end{algorithme}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.5]
+    \draw[->, thick] (0,0) -- (4,0) node[right] {$x$};
+    \draw[->, thick] (1,-0.5) -- (1,2.5) node[above] {$t$};
+
+    \draw[dashed, gray!50] (1.5,0.5) -- (3.5,0.5);
+    \draw[dashed, gray!50] (1.5,1.5) -- (3.5,1.5);
+    \draw[dashed, gray!50] (2,0) -- (2,2);
+    \draw[dashed, gray!50] (2.5,0) -- (2.5,2);
+    \draw[dashed, gray!50] (3,0) -- (3,2);
+
+    % Nœuds connus (temps n)
+    \filldraw[deffr] (2,0.5) circle (2pt) node[below left, text=black] {$u_{i-1}^n$};
+    \filldraw[deffr] (2.5,0.5) circle (2pt) node[below right, text=black] {$u_i^n$};
+    \filldraw[deffr] (3,0.5) circle (2pt) node[below right, text=black] {$u_{i+1}^n$};
+
+    % Nœud à calculer (temps n+1)
+    \filldraw[remfr] (2.5,1.5) circle (2pt) node[above right, text=black] {$u_i^{n+1}$};
+
+    % Flèches de dépendance
+    \draw[->, thick, shorten >=4pt] (2,0.5) -- (2.5,1.5);
+    \draw[->, thick, shorten >=4pt] (2.5,0.5) -- (2.5,1.5);
+    \draw[->, thick, shorten >=4pt] (3,0.5) -- (2.5,1.5);
+
+    \node[left] at (1,0.5) {$t_n$};
+    \node[left] at (1,1.5) {$t_{n+1}$};
+    \node[below] at (2,0) {$x_{i-1}$};
+    \node[below] at (2.5,0) {$x_i$};
+    \node[below] at (3,0) {$x_{i+1}$};
+\end{tikzpicture}
+\end{center}
+
+Sous forme matricielle, en posant $U^n = (u_1^n, \dots, u_N^n)^T$ et $F(t_n) = (f(x_1, t_n), \dots, f(x_N, t_n))^T$, le schéma s'écrit :
+\[
+    U^{n+1} = (I - \tau A) U^n + \tau F(t_n)
+\]
+où $A$ est la matrice tridiagonale :
+\[
+A = \frac{k}{h^2}
+\begin{pmatrix}
+2 & -1 & & 0 \\
+-1 & \ddots & \ddots & \\
+& \ddots & 2 & -1 \\
+0 & & -1 & 2
+\end{pmatrix} \in \mathbb{R}^{N \times N}
+\]
+
+\subsubsection{Schéma d'Euler rétrograde (implicite)}
+
+On fixe $n$ et on écrit cette fois l'équation au point $(x_i, t_{n+1})$ :
+\[
+    \frac{\partial u}{\partial t}(x_i, t_{n+1}) - k \frac{\partial^2 u}{\partial x^2}(x_i, t_{n+1}) = f(x_i, t_{n+1})
+\]
+En appliquant des différences finies rétrogrades pour le temps et centrées pour l'espace, nous obtenons :
+\[
+    \frac{u(x_i, t_{n+1}) - u(x_i, t_n)}{\tau} - k \frac{u(x_{i+1}, t_{n+1}) - 2u(x_i, t_{n+1}) + u(x_{i-1}, t_{n+1})}{h^2} = f(x_i, t_{n+1}) + \mathcal{O}(\tau + h^2)
+\]
+
+\begin{algorithme}[Méthode d'Euler Implicite]
+On considère donc le schéma numérique suivant :
+\begin{equation}
+\begin{cases}
+    \frac{u_i^{n+1} - u_i^n}{\tau} - k \frac{u_{i+1}^{n+1} - 2u_i^{n+1} + u_{i-1}^{n+1}}{h^2} = f(x_i, t_{n+1}) \\
+    u_0^{n+1} = u_{N+1}^{n+1} = 0
+\end{cases}
+\end{equation}
+En réarrangeant les termes pour isoler les inconnues au temps $t_{n+1}$ :
+\[
+    \left( 1 + \frac{2k\tau}{h^2} \right) u_i^{n+1} - \frac{k\tau}{h^2} \left( u_{i+1}^{n+1} + u_{i-1}^{n+1} \right) = u_i^n + \tau f(x_i, t_{n+1})
+\]
+\end{algorithme}
+
+Sous forme matricielle, le système devient :
+\[
+    (I + \tau A) U^{n+1} = U^n + \tau F(t_{n+1})
+\]
+À chaque itération, il faut résoudre un système linéaire pour trouver le vecteur $U^{n+1}$ !
+
+\subsection{Stabilité}
+
+Dans ce qui suit, on suppose qu'il n'y a pas de terme source ($f=0$).
+
+\begin{definition}[Critères de Stabilité]
+Un schéma numérique qui approxime la solution de l'équation de la chaleur est stable si :
+\begin{enumerate}
+    \item \textbf{Principe du maximum discret (positivité) :} $\forall i=1,\dots,N, \ u_i^n \ge 0 \implies \forall i=1,\dots,N, \ u_i^{n+1} \ge 0$.
+    \item \textbf{Non-croissance de la norme infini :} $\max_{i=1,\dots,N} |u_i^{n+1}| \le \max_{i=1,\dots,N} |u_i^n|$.
+\end{enumerate}
+On aimerait en effet que l'approximation numérique reproduise le comportement physique de la solution exacte continue.
+\end{definition}
+
+\begin{theoreme}[Stabilité des schémas d'Euler]
+\begin{itemize}
+    \item On peut montrer que le \textbf{schéma d'Euler rétrograde (implicite) est inconditionnellement stable} (stable quels que soient les choix de $h$ et $\tau$).
+    \item Le \textbf{schéma d'Euler progressif (explicite) est stable sous condition CFL} : il est stable si et seulement si 
+    \[
+        \tau \le \frac{h^2}{2k}
+    \]
+\end{itemize}
+\end{theoreme}
+
+\subsection{Convergence}
+
+On s'intéresse à l'erreur d'approximation à l'instant final $T = t_M$ :
+\[
+    e := \max_{i=1,\dots,N} |u(x_i, T) - u_i^M|
+\]
+Pour les deux méthodes (Euler progressif / rétrograde), on a utilisé :
+\begin{itemize}
+    \item 1 formule d'ordre 1 en temps : $\mathcal{O}(\tau)$.
+    \item 1 formule d'ordre 2 en espace : $\mathcal{O}(h^2)$.
+\end{itemize}
+
+\begin{proposition}[Ordre des schémas]
+On peut montrer que les deux schémas vus dans ce cours sont d'ordre $\mathcal{O}(\tau + h^2)$.
+
+Autrement dit : si on divise le pas d'espace $h$ par $2$ et le pas de temps $\tau$ par $4$, l'erreur globale est divisée par $4$.
+\end{proposition}

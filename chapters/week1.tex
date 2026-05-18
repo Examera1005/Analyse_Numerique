@@ -1,0 +1,107 @@
+% =========================================================
+\section{Semaine 1 : Introduction aux Méthodes Itératives}
+% =========================================================
+
+\subsection{Méthode du Point Fixe} 
+
+\subsubsection*{Théorie du Cours (Pages 3-5)} 
+
+L'idée (Itération de Picard) est de transformer $f(x)=0$ en une équation équivalente $x=\Phi(x).$ L'algorithme est défini par la suite : $x^{k+1}=\Phi(x^{k})$.
+
+\textbf{Conditions d'Existence et de Convergence} 
+
+D'après les notes de cours (p. 4), pour garantir la convergence, nous avons besoin de deux propriétés sur l'intervalle $I=[a,b]$ : 
+
+\begin{theoreme}[Du Point Fixe (Convergence Globale)] 
+Soit $\Phi:I\rightarrow\mathbb{R}$ telle que : 
+\begin{enumerate}
+    \item \textbf{Stabilité :} $\Phi(I)\subset I$ (Pour tout $x\in[a,b]$, $\Phi(x)\in[a,b]$).
+    \item \textbf{Contraction :} $\Phi$ est contractante, c'est-à-dire qu'il existe $L<1$ tel que $|\Phi^{\prime}(x)|\le L$ pour tout $x\in I$.
+\end{enumerate}
+Alors : 
+\begin{itemize}
+    \item Il existe un unique point fixe $x^{*}\in I$.
+    \item La suite converge vers $x^{*}$ pour n'importe quel point de départ $x^{0}\in I$.
+\end{itemize}
+\end{theoreme}
+
+\textbf{Convergence Locale (Théorème d'Ostrowski)} 
+
+Si on ne peut pas vérifier les conditions sur tout l'intervalle, le cours (p. 5) cite le théorème d'Ostrowski : Si $x^{*}$ est un point fixe et que $|\Phi^{\prime}(x^{*})|<1$, alors il existe un voisinage autour de $x^{*}$ dans lequel la méthode converge.
+
+\textbf{Types de Convergence (Série 1, Ex 1a)} 
+
+Le comportement dépend du signe de $\Phi^{\prime}(x)$ : 
+\begin{itemize}
+    \item \textbf{Monotone :} $0<\Phi^{\prime}(x)<1$. L'erreur diminue sans changer de signe.
+    \item \textbf{Oscillante :} $-1<\Phi^{\prime}(x)<0$. L'erreur change de signe à chaque itération (spirale).
+\end{itemize}
+
+\subsubsection*{Application (Exercice 1b)} 
+
+Soit $\Phi_{1}(x)=1-\sin(x)$ avec $x^{0}=0.05$.
+\begin{itemize}
+    \item $x^{1}=1-\sin(0.05)\approx0.95002$ 
+    \item $x^{2}=1-\sin(0.95002)\approx0.18658$ 
+\end{itemize}
+
+\textbf{Analyse :} $\Phi_{1}^{\prime}(x)=-\cos(x)$. Comme $-1<-\cos(x)<0$ sur l'intervalle, la convergence est oscillante (confirmé par le passage de 0.05 à 0.95 puis 0.18).
+
+\subsection{Méthode de Newton} 
+
+\subsubsection*{Dérivation par Taylor} 
+
+Le cours (p. 2) introduit Newton en cherchant le zéro de l'approximation linéaire de $f$. Développement de Taylor de $f$ autour de $x^{k}$ : 
+\begin{equation*}
+    f(x)\approx f(x^{k})+f^{\prime}(x^{k})(x-x^{k}) 
+\end{equation*}
+On cherche $x$ tel que cette approximation soit nulle ($0=f(x^{k})+f^{\prime}(x^{k})(x-x^{k})$), ce qui donne : 
+\begin{equation*}
+    x^{k+1}=x^{k}-\frac{f(x^{k})}{f^{\prime}(x^{k})} 
+\end{equation*}
+
+\subsubsection*{Lien avec le Point Fixe} 
+
+Le cours (p. 3) note que Newton peut être vue comme une méthode de point fixe avec : 
+\begin{equation*}
+    \Phi(x)=x-\frac{f(x)}{f^{\prime}(x)} 
+\end{equation*}
+Pour que Newton converge, il faut donc que $|\Phi^{\prime}(x^{*})|<1$. Calculons $\Phi^{\prime}(x)$ : 
+\begin{equation*}
+    \Phi^{\prime}(x)=1-\frac{(f^{\prime}(x))^{2}-f(x)f^{\prime\prime}(x)}{(f^{\prime}(x))^{2}}=\frac{f(x)f^{\prime\prime}(x)}{(f^{\prime}(x))^{2}} 
+\end{equation*}
+Au point fixe (la solution), $f(x^{*})=0$. Donc $\Phi^{\prime}(x^{*})=0$. Comme $0<1$, la méthode converge très vite (convergence quadratique) près de la solution.
+
+\subsubsection*{Le Problème du Tonneau (Exercice 2)} 
+
+On cherche la hauteur $h=r(1-\cos(\alpha))$. L'équation dérivée du volume est : 
+\begin{equation*}
+    f(\alpha)=\alpha-\frac{1}{2}\sin(2\alpha)-\frac{V}{lr^{2}}=0 
+\end{equation*}
+Dérivée pour Newton : $f^{\prime}(\alpha)=1-\cos(2\alpha)$.\\
+\textbf{Note :} Attention à $f^{\prime}(0)=0$. Il faut choisir $\alpha^{0}\neq0$.
+
+\subsection{Variantes : Sécante et Corde} 
+
+Le cours mentionne (p. 3) l'idée générale d'approcher $f$ par une droite de pente $q^{k}$ : 
+\begin{equation*}
+    x^{k+1}=x^{k}-\frac{f(x^{k})}{q^{k}} 
+\end{equation*}
+
+\subsubsection*{Comparaison des Méthodes (Exercice 3)} 
+
+Application à l'équation de Kepler (citée en p. 2 du cours comme exemple de $f(x)=0$) : 
+\begin{equation*}
+    M=E-e\sin(E) 
+\end{equation*}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llll}
+\toprule
+\textbf{Méthode} & \textbf{Pente $q^{k}$} & \textbf{Ordre (Vitesse)} & \textbf{Commentaire} \\ \midrule
+Newton & $f^{\prime}(x^{k})$ (Tangente) & $p=2$ (Quadratique) & Très rapide, nécessite dérivée.  \\
+Sécante & $\frac{f(x^{k})-f(x^{k-1})}{x^{k}-x^{k-1}}$ (Sécante) & $p\approx1.618$ & Rapide, pas de dérivée analytique.  \\
+Corde & $f^{\prime}(x^{0})$ (Constante) & $p=1$ (Linéaire) & Lente, très stable.  \\ \bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,168 @@
+% =========================================================
+\section{Semaine 5 : Interpolation}
+% =========================================================
+
+\begin{explication}[Idée principale]
+Construire une fonction continue $p$ telle que $p(x_i) = y_i$ pour $i = 0, \dots, n$.
+\end{explication}
+
+\subsection{Interpolation polynomiale}
+
+Étant donnés des points $(x_i, y_i)$ pour $i = 0, \dots, n$, on aimerait construire $p$, un polynôme de degré $n$, tel que :
+$$p(x_i) = y_i, \quad \forall i = 0, \dots, n$$
+
+Posons $p(x) = a_0 + a_1x + a_2x^2 + \dots + a_nx^n$.
+La condition $p(x_i) = y_i$ équivaut à :
+$$a_0 + a_1x_i + \dots + a_nx_i^n = y_i, \quad \forall i = 0, \dots, n$$
+
+Ce qui nous donne le système matriciel suivant :
+$$
+\begin{bmatrix}
+1 & x_0 & x_0^2 & \dots & x_0^n \\
+1 & x_1 & x_1^2 & \dots & x_1^n \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+1 & x_n & x_n^2 & \dots & x_n^n
+\end{bmatrix}
+\begin{bmatrix}
+a_0 \\
+a_1 \\
+\vdots \\
+a_n
+\end{bmatrix}
+=
+\begin{bmatrix}
+y_0 \\
+y_1 \\
+\vdots \\
+y_n
+\end{bmatrix}
+$$
+Où la matrice du système est $V$, la \textbf{matrice de Vandermonde}.
+
+Si les $x_i$ sont tous distincts, il existe un unique polynôme de degré $n$ passant par les points $(x_i, y_i)$, $i=0,\dots,n$. Cela implique que le système linéaire est inversible.
+
+\begin{remarque}[Problème avec la matrice de Vandermonde]
+\textbf{Mais !} Il faut résoudre un système de taille $(n+1) \times (n+1)$, ce qui est \textbf{coûteux}. \\
+De plus, le conditionnement de $V$, noté $\kappa(V)$, est très grand. Par conséquent, une petite erreur sur $y$ entraîne une grande différence sur le résultat.
+
+En effet, si $Va = y$ et $V\tilde{a} = \tilde{y}$, on a :
+$$\frac{\|a - \tilde{a}\|}{\|a\|} \le \kappa(V) \frac{\|y - \tilde{y}\|}{\|y\|}$$
+Si $\kappa(V)$ est grand, même si l'erreur relative $\frac{\|y - \tilde{y}\|}{\|y\|} \ll 1$, l'erreur sur les coefficients $\frac{\|a - \tilde{a}\|}{\|a\|}$ sera potentiellement très grande.
+\end{remarque}
+
+\subsection{Base de Lagrange}
+
+Au lieu de chercher $p$ dans la base canonique $\{1, x, \dots, x^n\}$, on va chercher $p$ dans une base $\{L_i\}_{i=0}^n$.
+
+On aimerait que $L_i$ soit un polynôme de degré $n$ tel que :
+$$
+L_i(x_j) = 
+\begin{cases} 
+1 & \text{si } i = j \\ 
+0 & \text{sinon} 
+\end{cases}
+$$
+avec $x_i$, $i=0,\dots,n$, les nœuds d'interpolation.
+
+\textbf{Pourquoi ?} \\
+Si l'on écrit $p(x) = \sum_{i=0}^n \alpha_i L_i(x)$, alors :
+$$p(x_j) = \sum_{i=0}^n \alpha_i L_i(x_j) = \alpha_j$$
+Donc, pour assurer $p(x_j) = y_j$ pour $j=0,\dots,n$, il suffit de poser :
+$$p(x) = \sum_{i=0}^n y_i L_i(x)$$
+
+\subsubsection{Construction de la base de Lagrange}
+
+\begin{definition}[Polynômes de Lagrange]
+On définit les polynômes de Lagrange $L_i(x)$ par :
+$$L_i(x) = \prod_{\substack{j=0 \\ j \neq i}}^n \frac{(x - x_j)}{(x_i - x_j)}$$
+\end{definition}
+
+Alors $L_i$ est bien un polynôme de degré $n$.
+Il reste à montrer que c'est bien une base de $\mathbb{P}_n$ (l'ensemble des polynômes de degré $\le n$).
+
+Pour ceci, puisque $\mathbb{P}_n$ est un espace vectoriel de dimension $(n+1)$, et qu'on a $(n+1)$ fonctions $L_i$, il suffit de montrer que c'est une famille libre.
+
+\begin{explication}[Indépendance linéaire]
+Supposons qu'il existe des coefficients $c_0, \dots, c_n$ tels que $\sum_{i=0}^n c_i L_i(x) = 0, \forall x$. \\
+En particulier, si on évalue en $x = x_j$ :
+$$0 = \sum_{i=0}^n c_i L_i(x_j) = c_j$$
+Donc $c_j = 0, \forall j$. La famille est donc bien une famille libre.
+\end{explication}
+
+La famille $\{L_i\}_{i=0}^n$ est appelée la \textbf{base de Lagrange} associée aux points $x_i$ ($i=0,\dots,n$).
+
+\textbf{En résumé, pour construire $p$ tel que $p(x_i) = y_i$ :}
+\begin{enumerate}
+    \item On construit la base de Lagrange $\{L_i\}_{i=0}^n$ associée aux points $\{x_i\}_{i=0}^n$.
+    \item On définit le polynôme interpolant : $p(x) = \sum_{i=0}^n y_i L_i(x)$.
+\end{enumerate}
+
+\subsection{Interpolation de fonction}
+
+Étant donnée une fonction $f : [a, b] \to \mathbb{R}$ continue, et des points $x_i \in [a, b]$, on aimerait construire $p_n$, un polynôme de degré $n$, tel que :
+$$p_n(x_i) = f(x_i), \quad \forall i = 0, \dots, n$$
+
+\textbf{Pourquoi fait-on cela ?}
+\begin{itemize}
+    \item Évaluation plus rapide de $f$
+    \item Représentation graphique de $f$
+    \item Intégration numérique
+    \item Dérivation numérique
+\end{itemize}
+
+Comme vu précédemment, étant donnés les $x_i$, on pose :
+$$p_n(x) = \sum_{i=0}^n f(x_i) L_i(x)$$
+qui est l'interpolant de degré $n$ de $f$ aux points $x_i$ ($i=0,\dots,n$).
+
+\textbf{Question :} Est-ce que $p_n$ est une bonne approximation de $f$ ? Est-ce que $p_n \to f$ quand $n \to \infty$ ?
+
+\begin{theoreme}[Erreur d'interpolation (nœuds quelconque)]
+Soit $f : [a,b] \to \mathbb{R}$ une fonction de classe $C^{n+1}$. Soient $x_0, \dots, x_n \in [a,b]$. \\
+Soit $p_n$ le polynôme d'interpolation de $f$ aux points $x_i$. Alors :
+$$\max_{x\in[a,b]} |f(x) - p_n(x)| \le \frac{1}{(n+1)!} \max_{\xi\in[a,b]} |f^{(n+1)}(\xi)| \max_{x\in[a,b]} \prod_{i=0}^n |x - x_i|$$
+\end{theoreme}
+
+\begin{theoreme}[Erreur d'interpolation (nœuds équidistribués)]
+Soit $f : [a,b] \to \mathbb{R}$ une fonction de classe $C^{n+1}$. \\
+Soient $x_0, \dots, x_n \in [a,b]$ équidistribués (i.e., avec un pas $h = \frac{b-a}{n}$). Alors :
+$$\max_{x\in[a,b]} |f(x) - p_n(x)| \le \frac{1}{(n+1)!} \left(\frac{b-a}{n}\right)^{n+1} \max_{\xi\in[a,b]} |f^{(n+1)}(\xi)|$$
+\end{theoreme}
+
+\begin{remarque}[Instabilités (Phénomène de Runge)]
+Pour l'interpolation polynomiale globale, quand $n \to \infty$, il y a des \textbf{instabilités}. Il faut que la fonction $f$ soit extrêmement régulière pour que la série d'interpolation converge.
+\end{remarque}
+
+\subsection{Interpolation par intervalles (par morceaux / Splines)}
+
+Pour contourner le problème des grandes valeurs de $n$, on considère $(N+1)$ points :
+$$a = x_0 < x_1 < \dots < x_N = b$$
+
+On approxime $f$ par morceaux. Sur chaque sous-intervalle $[x_i, x_{i+1}]$ (pour $i=0,\dots,N-1$), on considère $n$ points équidistribués :
+$$x_i = y_{i,0} < y_{i,1} < \dots < y_{i,n} = x_{i+1}$$
+
+On interpole localement par un polynôme de degré $n$ passant par les points $(y_{i,j}, f(y_{i,j}))$. \\
+En faisant cela, on approxime $f$ par une fonction $f_h$ qui est :
+\begin{itemize}
+    \item L'interpolant de degré $n$ par intervalles de $f$.
+    \item Continue sur $[a,b]$.
+    \item Un polynôme de degré $n$ strictement sur chaque sous-intervalle $[x_i, x_{i+1}]$.
+\end{itemize}
+
+\begin{theoreme}[Erreur d'interpolation par morceaux]
+Soit $f : [a,b] \to \mathbb{R}$ une fonction $C^{n+1}$ et $f_h$ son interpolant de degré $n$ par intervalles. \\
+Posons $h = \max_i |x_{i+1} - x_i|$. Alors il existe une constante $C$ (indépendante de $h$) telle que :
+$$\max_{x\in[a,b]} |f(x) - f_h(x)| \le C h^{n+1}$$
+En particulier, si les $x_i$ sont équidistribués avec un pas $h$, alors cette borne s'applique.
+\end{theoreme}
+
+\textbf{En pratique :} on prend $n$ petit ($n = 1, 2, 3, 4$) et $N$ grand (beaucoup de sous-intervalles).
+
+\begin{explication}[Démonstration de la borne d'erreur par morceaux]
+En utilisant le théorème précédent appliqué localement sur le sous-intervalle $[x_i, x_{i+1}]$, on a :
+$$\max_{x\in[x_i, x_{i+1}]} |f(x) - f_h(x)| \le \frac{1}{(n+1)!} \left(\frac{x_{i+1}-x_i}{n}\right)^{n+1} \max_{\xi \in [x_i, x_{i+1}]} |f^{(n+1)}(\xi)|$$
+On majore $x_{i+1}-x_i$ par le pas global $h$, et le maximum de la dérivée locale par le maximum sur tout le domaine $[a,b]$ :
+$$\le \frac{1}{(n+1)! \, n^{n+1}} \max_{\xi\in[a,b]} |f^{(n+1)}(\xi)| \, h^{n+1}$$
+Ce qui nous donne bien l'estimation globale :
+$$\max_{x\in[a,b]} |f(x) - f_h(x)| \le C h^{n+1}$$
+avec $C = \frac{1}{(n+1)! \, n^{n+1}} \max_{\xi\in[a,b]} |f^{(n+1)}(\xi)|$.
+\end{explication}

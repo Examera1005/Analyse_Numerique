@@ -1,0 +1,73 @@
+% --- UNIVERSAL PREAMBLE BLOCK ---
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=2cm, right=2cm]{geometry}
+\usepackage{lmodern}
+\usepackage{fontspec}
+
+\usepackage[french, bidi=basic, provide=*]{babel}
+
+\babelprovide[import, onchar=ids fonts]{french}
+\babelprovide[import, onchar=ids fonts]{english}
+
+% Set default/Latin font to Sans Serif in the main (rm) slot
+\babelfont{rm}{Noto Sans}
+% Assign a specific font for French text
+\babelfont[french]{rm}{Noto Sans}
+
+% Add because main language is not English
+\usepackage{enumitem}
+\setlist[itemize]{label=-}
+
+% --- MATH AND FORMATTING PACKAGES ---
+\usepackage{amsmath, amssymb, amsthm, mathrsfs}
+\usepackage{xcolor}
+\usepackage{etoolbox} % Pour \ifstrempty
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{skins, breakable, theorems}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{float}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{tikz}
+\usepackage{booktabs}
+
+% --- COLOR DEFINITIONS (Optimisées et unifiées) ---
+\definecolor{defbg}{RGB}{240, 248, 255}  % Bleu très clair
+\definecolor{deffr}{RGB}{41, 128, 185}   % Bleu principal
+\definecolor{thmbg}{RGB}{245, 255, 250}  % Vert très clair
+\definecolor{thmfr}{RGB}{39, 174, 96}    % Vert principal
+\definecolor{algobg}{RGB}{253, 245, 230} % Orange très clair
+\definecolor{algofr}{RGB}{211, 84, 0}    % Orange principal
+\definecolor{rembg}{RGB}{255, 245, 245}  % Rouge/Gris très clair
+\definecolor{remfr}{RGB}{192, 57, 43}    % Rouge foncé
+\definecolor{exbg}{RGB}{248, 248, 248}   % Gris très clair
+\definecolor{exfr}{RGB}{105, 105, 105}   % Gris foncé
+
+% --- CUSTOM BOXES DEFINITIONS (Unifiées pour tout le document) ---
+\tcbset{
+    commonbox/.style={
+        boxrule=1pt, arc=4pt, breakable,
+        left=2mm, right=2mm, top=2mm, bottom=2mm,
+        fonttitle=\bfseries
+    }
+}
+
+\newtcolorbox{definition}[1][]{commonbox, colback=defbg, colframe=deffr, title={\textbf{Définition}\ifstrempty{#1}{}{ : #1}}}
+\newtcolorbox{theoreme}[1][]{commonbox, colback=thmbg, colframe=thmfr, title={\textbf{Théorème}\ifstrempty{#1}{}{ : #1}}}
+\newtcolorbox{proposition}[1][]{commonbox, colback=thmbg, colframe=thmfr, title={\textbf{Proposition}\ifstrempty{#1}{}{ : #1}}}
+\newtcolorbox{algorithme}[1][]{commonbox, colback=algobg, colframe=algofr, title={\textbf{Algorithme / Méthode}\ifstrempty{#1}{}{ : #1}}}
+\newtcolorbox{explication}[1][]{commonbox, colback=rembg, colframe=remfr, title={\textbf{Explication / Idée}\ifstrempty{#1}{}{ : #1}}}
+\newtcolorbox{remarque}[1][]{commonbox, colback=rembg, colframe=remfr, title={\textbf{Remarque}\ifstrempty{#1}{}{ : #1}}}
+\newtcolorbox{exemple}[1][]{commonbox, colback=exbg, colframe=exfr, title={\textbf{Exemple}\ifstrempty{#1}{}{ : #1}}}
+
+% --- SETTINGS ---
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1em}
+
+% Le package hyperref doit toujours être chargé en dernier
+\usepackage[colorlinks=true, linkcolor=deffr, urlcolor=deffr, citecolor=deffr]{hyperref}
+
+% --- TITLE INFORMATION ---
+\title{\textbf{Analyse Numérique}\\ \large Basé sur le cours de Maude Girardin}
+\author{Thélio Geiser}
+\date{Spring 2026}

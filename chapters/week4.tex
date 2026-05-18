@@ -1,0 +1,168 @@
+% =========================================================
+\section{Semaine 4 : Méthodes Itératives et Résolution de Systèmes Linéaires}
+% =========================================================
+
+\subsection{Méthodes de Richardson}
+
+On aimerait écrire le système $A\mathbf{x} = \mathbf{b}$ sous la forme d'un problème de point fixe. 
+Pour une matrice $P$ inversible, on a l'équivalence :
+$$A\mathbf{x} = \mathbf{b} \iff P\mathbf{x} = (P-A)\mathbf{x} + \mathbf{b}$$
+On résout $A\mathbf{x} = \mathbf{b}$ en posant $\mathbf{x} = \Phi(\mathbf{x})$ avec :
+$$\Phi(\mathbf{x}) = P^{-1}((P-A)\mathbf{x} + \mathbf{b})$$
+
+On peut alors, étant donné $\mathbf{x}_0$, construire les itérations de point fixe :
+$$\mathbf{x}_{k+1} = \Phi(\mathbf{x}_k)$$
+Si la suite $\{\mathbf{x}_k\}_{k \ge 1}$ converge vers $\mathbf{x}$, alors $\mathbf{x} = \Phi(\mathbf{x})$ et donc $A\mathbf{x} = \mathbf{b}$.
+
+À chaque étape, on a $\mathbf{x}_{k+1} = \Phi(\mathbf{x}_k)$, ce qui s'écrit de manière équivalente :
+$$P\mathbf{x}_{k+1} = (P-A)\mathbf{x}_k + \mathbf{b}$$
+$$\implies \underbrace{P(\mathbf{x}_{k+1} - \mathbf{x}_k)}_{\text{Incrément}} = \underbrace{\mathbf{b} - A\mathbf{x}_k}_{\text{Résidu } \mathbf{r}_k}$$
+
+\begin{remarque}
+La matrice $P$ doit être plus simple à inverser que $A$ (sinon la méthode est inutile). On choisit généralement $P$ diagonale ou triangulaire.
+\end{remarque}
+
+\textbf{Le coût computationnel :}
+\begin{itemize}
+    \item Calcul du résidu $A\mathbf{x}_k$ : Coût en $\mathcal{O}(n^2)$.
+    \item Résolution de $P\mathbf{y} = \mathbf{b} - A\mathbf{x}_k$ : Coût en $\mathcal{O}(n)$ si $P$ est diagonale, et en $\mathcal{O}(n^2)$ si $P$ est triangulaire.
+\end{itemize}
+Une itération coûte environ l'équivalent d'une itération de descente LU. Il faut que la méthode converge en $k \ll n$ étapes pour qu'elle soit compétitive par rapport aux méthodes directes.
+
+\subsubsection*{Exemples Classiques}
+
+\textbf{1) Méthode de Jacobi :}
+On choisit $P = \text{diag}(A)$. En formulation coordonnée :
+$$x_i^{(k+1)} = \frac{1}{a_{ii}} \left[ b_i - \sum_{\substack{j=1 \\ j \neq i}}^n a_{ij} x_j^{(k)} \right]$$
+
+\textbf{2) Méthode de Gauss-Seidel :}
+On choisit $P$ comme la partie triangulaire inférieure de $A$, diagonale comprise. En formulation coordonnée :
+$$x_i^{(k+1)} = \frac{1}{a_{ii}} \left[ b_i - \sum_{j=1}^{i-1} a_{ij} x_j^{(k+1)} - \sum_{j=i+1}^n a_{ij} x_j^{(k)} \right]$$
+
+\subsubsection*{Analyse de la Convergence}
+
+\begin{definition}[Norme Matricielle]
+Pour $A \in \mathbb{R}^{n \times n}$, la norme matricielle subordonnée est définie par :
+$$\|A\| = \sup_{\mathbf{x} \neq \mathbf{0}} \frac{\|A\mathbf{x}\|}{\|\mathbf{x}\|} \quad \text{avec} \quad \|\mathbf{x}\| = \left( \sum_{i=1}^n x_i^2 \right)^{1/2}$$
+On a alors, $\forall \mathbf{x} \in \mathbb{R}^n, \quad \|A\mathbf{x}\| \le \|A\| \|\mathbf{x}\|$.
+\end{definition}
+
+\begin{definition}[Conditionnement et Rayon Spectral]
+\begin{itemize}
+    \item \textbf{Conditionnement :} $\kappa(A) = \|A\| \cdot \|A^{-1}\|$. Si $A$ est Symétrique Définie Positive (SDP), $\kappa(A) = \frac{\lambda_{\max}(A)}{\lambda_{\min}(A)}$.
+    \item \textbf{Rayon spectral :} $\rho(A) = \max |\lambda_i|$ où les $\lambda_i$ sont les valeurs propres de $A$.
+\end{itemize}
+\end{definition}
+
+\begin{theoreme}
+Soit $A \in \mathbb{R}^{n \times n}$. $\lim_{k \to \infty} A^k = 0 \iff \rho(A) < 1$.
+\end{theoreme}
+
+Soit $\{\mathbf{x}_k\}_{k \ge 1}$ la suite issue de l'itération $P\mathbf{x}_{k+1} = (P-A)\mathbf{x}_k + \mathbf{b}$. \\
+\textbf{Question :} Est-ce que $\lim_{k \to \infty} \mathbf{x}_k = \mathbf{x}$ (où $A\mathbf{x} = \mathbf{b}$) ?
+
+Soit l'erreur $\mathbf{e}_k = \mathbf{x} - \mathbf{x}_k$. En injectant la solution exacte $P\mathbf{x} = (P-A)\mathbf{x} + \mathbf{b}$ et l'itération, on obtient :
+$$P(\mathbf{x} - \mathbf{x}_{k+1}) = (P-A)(\mathbf{x} - \mathbf{x}_k) \iff P \mathbf{e}_{k+1} = (P-A) \mathbf{e}_k$$
+$$\implies \mathbf{e}_{k+1} = P^{-1}(P-A) \mathbf{e}_k$$
+
+En passant à la norme :
+$$\|\mathbf{e}_{k+1}\| \le \|P^{-1}(P-A)\| \cdot \|\mathbf{e}_k\| \le \|P^{-1}(P-A)\|^{k+1} \cdot \|\mathbf{e}_0\|$$
+
+\begin{theoreme}[Convergence de Richardson]
+\begin{enumerate}
+    \item Si $\|P^{-1}(P-A)\| < 1$, la méthode de Richardson converge $\forall \mathbf{x}_0 \in \mathbb{R}^n$. De plus, la norme donne une idée de la vitesse de convergence.
+    \item La méthode de Richardson converge si et seulement si $\rho(P^{-1}(P-A)) < 1$.
+\end{enumerate}
+\end{theoreme}
+
+\textbf{Critère d'arrêt :}
+On s'arrête lorsque l'erreur relative estimée passe sous une tolérance donnée :
+$$\frac{\|\mathbf{x} - \mathbf{x}_k\|}{\|\mathbf{x}\|} \le \kappa(A) \frac{\|\mathbf{r}_k\|}{\|\mathbf{b}\|} < \text{tol}$$
+
+\subsection{Méthodes itératives pour les matrices SDP}
+
+Pour toute la suite, on suppose que $A \in \mathbb{R}^{n \times n}$ est Symétrique Définie Positive (SDP). \\
+Pour tout $\mathbf{x} \in \mathbb{R}^n$, on définit la fonctionnelle quadratique :
+$$\phi(\mathbf{x}) = \frac{1}{2} \mathbf{x}^T A \mathbf{x} - \mathbf{x}^T \mathbf{b}$$
+Alors, son gradient est : $\nabla \phi(\mathbf{x}) = A\mathbf{x} - \mathbf{b}$.
+
+\begin{proposition}[Lien avec le système linéaire]
+$$A\mathbf{x} = \mathbf{b} \iff \phi(\mathbf{x}) \le \phi(\mathbf{y}) \quad \forall \mathbf{y} \in \mathbb{R}^n$$
+(i.e. $\mathbf{x}$ minimise globalement $\phi$).
+\end{proposition}
+
+\begin{explication}
+Puisque $A$ est une matrice symétrique, le gradient de $\phi$ s'écrit $\nabla \phi(\mathbf{x}) = A\mathbf{x} - \mathbf{b}$. La matrice hessienne correspondante est $\nabla^2 \phi(\mathbf{x}) = A$. Comme $A$ est définie positive, la fonction $\phi$ est strictement convexe. Par conséquent, $\phi$ admet un unique minimum global qui correspond à l'unique point critique vérifiant $\nabla \phi(\mathbf{x}) = \mathbf{0}$, ce qui est équivalent à $A\mathbf{x} - \mathbf{b} = \mathbf{0}$, soit $A\mathbf{x} = \mathbf{b}$.
+\end{explication}
+
+\textbf{Conséquence :} Au lieu de chercher la solution exacte d'un système linéaire, on peut chercher à minimiser la fonction $\phi$ avec une \textbf{méthode de descente}.
+
+Étant donné $\mathbf{x}_0$, on définit la suite :
+$$\mathbf{x}_{k+1} = \mathbf{x}_k + \alpha_{k} \mathbf{w}_{k}$$
+où $\mathbf{w}_k$ est la direction de descente, et $\alpha_k \in \mathbb{R}$ est le pas, choisi de façon à minimiser $f(\alpha) = \phi(\mathbf{x}_k + \alpha \mathbf{w}_k)$.
+
+\begin{proposition}[Pas optimal de descente]
+Si $f(\alpha) = \phi(\mathbf{x}_k + \alpha \mathbf{w}_k)$ avec $\mathbf{w}_k \neq \mathbf{0}$, le minimum de $f$ est atteint en :
+$$\alpha_k = \frac{\mathbf{w}_k^T \mathbf{r}_k}{\mathbf{w}_k^T A \mathbf{w}_k} \quad \text{où } \mathbf{r}_k = \mathbf{b} - A\mathbf{x}_k \text{ (le résidu)}$$
+\end{proposition}
+
+\begin{explication}
+Cherchons le point critique de $f(\alpha)$ :
+$$f'(\alpha) = \frac{d}{d\alpha} \phi(\mathbf{x}_k + \alpha \mathbf{w}_k) = \nabla \phi(\mathbf{x}_k + \alpha \mathbf{w}_k)^T \mathbf{w}_k$$
+En injectant l'expression du gradient $\nabla \phi(\mathbf{y}) = A\mathbf{y} - \mathbf{b}$ :
+\begin{align*}
+f'(\alpha) &= (A(\mathbf{x}_k + \alpha \mathbf{w}_k) - \mathbf{b})^T \mathbf{w}_k \\
+&= (A\mathbf{x}_k - \mathbf{b} + \alpha A\mathbf{w}_k)^T \mathbf{w}_k \\
+&= (-\mathbf{r}_k + \alpha A\mathbf{w}_k)^T \mathbf{w}_k \\
+&= -\mathbf{r}_k^T \mathbf{w}_k + \alpha \mathbf{w}_k^T A \mathbf{w}_k
+\end{align*}
+En posant $f'(\alpha) = 0$, on trouve bien $\alpha = \frac{\mathbf{r}_k^T \mathbf{w}_k}{\mathbf{w}_k^T A \mathbf{w}_k} = \frac{\mathbf{w}_k^T \mathbf{r}_k}{\mathbf{w}_k^T A \mathbf{w}_k}$. \\
+De plus, la dérivée seconde est $f''(\alpha) = \mathbf{w}_k^T A \mathbf{w}_k > 0$ (car $A$ est SDP et $\mathbf{w}_k \neq \mathbf{0}$), confirmant que ce point est un minimum global le long de la direction $\mathbf{w}_k$.
+\end{explication}
+
+\subsection{Méthode du Gradient (à pas optimal)}
+
+Le choix le plus naturel pour la direction de descente est la direction de la plus grande pente (steepest descent) au point $\mathbf{x}_k$, à savoir l'opposé du gradient :
+$$\mathbf{w}_k = -\nabla \phi(\mathbf{x}_k) = -(A\mathbf{x}_k - \mathbf{b}) = \mathbf{b} - A\mathbf{x}_k = \mathbf{r}_k$$
+Si $\mathbf{r}_k = \mathbf{0}$, alors $\mathbf{x}_k$ est solution et on s'arrête. Sinon, on itère avec le pas optimal :
+$$\alpha_k = \frac{\mathbf{r}_k^T \mathbf{r}_k}{\mathbf{r}_k^T A \mathbf{r}_k}$$
+$$\mathbf{x}_{k+1} = \mathbf{x}_k + \alpha_k \mathbf{r}_k$$
+Pour optimiser les calculs, on met à jour le résidu directement :
+$$\mathbf{r}_{k+1} = \mathbf{b} - A\mathbf{x}_{k+1} = \mathbf{b} - A(\mathbf{x}_k + \alpha_k \mathbf{r}_k) = \mathbf{r}_k - \alpha_k A \mathbf{r}_k$$
+
+\begin{algorithm}[H]
+\caption{Méthode du Gradient à Pas Optimal}
+\begin{algorithmic}[1]
+\Require $A$ (SDP), $\mathbf{b}$, $\mathbf{x}_0$, tol, max\_it
+\State $\mathbf{r} = \mathbf{b} - A \mathbf{x}_0$
+\State $\mathbf{x} = \mathbf{x}_0$
+\State $k = 0$
+\While{$\|\mathbf{r}\| > \text{tol}$ \textbf{et} $k < \text{max\_it}$}
+    \State $\mathbf{z} = A \mathbf{r}$
+    \State $\alpha = \frac{\mathbf{r}^T \mathbf{r}}{\mathbf{r}^T \mathbf{z}}$
+    \State $\mathbf{x} = \mathbf{x} + \alpha \mathbf{r}$
+    \State $\mathbf{r} = \mathbf{r} - \alpha \mathbf{z}$
+    \State $k = k + 1$
+\EndWhile
+\State \Return $\mathbf{x}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{theoreme}[Convergence de la méthode du Gradient]
+La méthode du gradient converge pour toute matrice $A$ SDP et $\forall \mathbf{x}_0 \in \mathbb{R}^n$. De plus, on a la majoration d'erreur suivante par rapport à la norme induite par $A$ (où $\|\mathbf{y}\|_A^2 = \mathbf{y}^T A \mathbf{y}$) :
+$$\|\mathbf{x} - \mathbf{x}_k\|_A \le C \left( \frac{\kappa(A) - 1}{\kappa(A) + 1} \right)^k \|\mathbf{x} - \mathbf{x}_0\|_A$$
+\textbf{Remarque :} Si $\kappa(A) \gg 1$, alors la fraction tend vers $1$ et la convergence est très lente.
+\end{theoreme}
+
+\subsection{Méthode du Gradient Conjugué (GC)}
+
+Pour pallier le problème de lenteur en zigzag, on introduit une correction. Les directions de descente successives $\mathbf{w}_n$ sont construites de la façon suivante :
+$$\mathbf{w}_0 = \mathbf{r}_0$$
+$$\mathbf{w}_{n+1} = \mathbf{r}_{n+1} + \beta_n \mathbf{w}_n$$
+Le coefficient $\beta_n$ (facteur de correction) est choisi de manière à exiger l'$A$-orthogonalité (ou conjugaison) des directions : $\mathbf{w}_{n+1}^T A \mathbf{w}_i = 0$ pour tout $i \le n$.
+
+\begin{theoreme}[Convergence du Gradient Conjugué]
+Soit $A \in \mathbb{R}^{n \times n}$ SDP. En arithmétique exacte, la méthode du gradient conjugué atteint la solution exacte en au plus $n$ itérations. \\
+De plus, la vitesse de convergence satisfait :
+$$\|\mathbf{x} - \mathbf{x}_k\|_A \le 2 \left( \frac{\sqrt{\kappa(A)} - 1}{\sqrt{\kappa(A)} + 1} \right)^k \|\mathbf{x} - \mathbf{x}_0\|_A$$
+\end{theoreme}

@@ -1,0 +1,171 @@
+% =========================================================
+\section{Semaine 3 : Résolution de systèmes linéaires}
+% =========================================================
+
+\subsection{Introduction : Résolution de systèmes linéaires}
+
+\textbf{But :} Résoudre des systèmes de taille $n \times n$, de la forme :
+\[ A\vec{x} = \vec{b} \]
+où $A = (a_{ij})_{1 \le i,j \le n}$ est une matrice carrée, $\vec{x}$ est le vecteur des inconnues et $\vec{b}$ le vecteur second membre.
+
+\textbf{Exemples d'application :}
+\begin{itemize}
+    \item Méthode de Newton pour les systèmes non linéaires.
+    \item Résolution d'Équations aux Dérivées Partielles (EDP) discrétisées (cf. suite du cours).
+\end{itemize}
+
+On sait que si $A$ est inversible, le système admet une unique solution. \\
+\textbf{Question :} Comment la trouver efficacement ?
+
+\subsection{Systèmes triangulaires}
+
+\subsubsection{Système triangulaire inférieur}
+Un système est triangulaire inférieur si $a_{ij} = 0$ pour tout $j > i$.
+
+\begin{algorithme}[Substitution progressive]
+\textbf{Entrées :} Matrice $A \in \mathbb{R}^{n \times n}$ triangulaire inférieure, vecteur $\vec{b} \in \mathbb{R}^n$. \\
+\textbf{Pour} $i = 1, \dots, n$ \textbf{faire :}
+\[ x_i = \frac{b_i - \sum_{j=1}^{i-1} a_{ij}x_j}{a_{ii}} \]
+\textbf{Fin Pour} \\
+\textbf{Retourne :} $\vec{x}$, solution de $A\vec{x} = \vec{b}$.
+\end{algorithme}
+
+\subsubsection{Système triangulaire supérieur}
+Un système est triangulaire supérieur si $a_{ij} = 0$ pour tout $j < i$.
+
+\begin{algorithme}[Substitution rétrograde]
+\textbf{Entrées :} Matrice $A \in \mathbb{R}^{n \times n}$ triangulaire supérieure, vecteur $\vec{b} \in \mathbb{R}^n$. \\
+\textbf{Pour} $i = n$ à $1$ \textbf{faire :}
+\[ x_i = \frac{b_i - \sum_{j=i+1}^{n} a_{ij}x_j}{a_{ii}} \]
+\textbf{Fin Pour} \\
+\textbf{Retourne :} $\vec{x}$, solution de $A\vec{x} = \vec{b}$.
+\end{algorithme}
+
+\subsection{Factorisation LU}
+
+\subsubsection{Principe et élimination de Gauss}
+L'objectif est de décomposer la matrice $A$ sous la forme $A = LU$, où $L$ est triangulaire inférieure et $U$ est triangulaire supérieure.
+
+\textbf{Exemple : Résoudre $A\vec{x} = \vec{b}$}
+\[ 
+A = \begin{pmatrix} 2 & 1 & 0 \\ -4 & 3 & -1 \\ 4 & -3 & 4 \end{pmatrix}, \quad 
+\vec{b} = \begin{pmatrix} 4 \\ 0 \\ -2 \end{pmatrix} 
+\]
+Application de l'élimination de Gauss :
+\begin{enumerate}
+    \item $L_2 \leftarrow L_2 - \left(\frac{-4}{2}\right)L_1$
+    \item $L_3 \leftarrow L_3 - \left(\frac{4}{2}\right)L_1$
+\end{enumerate}
+On obtient une étape intermédiaire. Puis on annule le coefficient de la 3ème ligne, 2ème colonne :
+\begin{enumerate}
+    \item $L_3 \leftarrow L_3 - \left(\frac{-5}{5}\right)L_2$
+\end{enumerate}
+À la fin, on obtient un système triangulaire supérieur $U\vec{x} = \vec{b}^{(3)}$, que l'on résout facilement (substitution rétrograde).
+
+\subsubsection{Avantages de la décomposition $L \cdot U = A$}
+
+\textbf{Inconvénient de la méthode de Gauss simple :} Si l'on doit résoudre $A\vec{x}^k = \vec{b}^k$ avec de multiples vecteurs $\vec{b}^k$ qui dépendent de $k$, on doit tout recommencer à chaque fois.
+
+\textbf{La solution avec LU :} Si on définit formellement $L \cdot U = A$, on a maintenant 2 systèmes triangulaires à résoudre à chaque étape $k$ :
+\[
+\begin{cases}
+L\vec{y}^k = \vec{b}^k & \text{(Système triangulaire inférieur)} \\
+U\vec{x}^k = \vec{y}^k & \text{(Système triangulaire supérieur)}
+\end{cases}
+\]
+
+\textbf{Avantages :}
+\begin{enumerate}
+    \item Calculer \textbf{une fois pour toutes} la décomposition $LU$ de $A$.
+    \item À chaque étape, on résout très rapidement les deux systèmes $L\vec{y}^k = \vec{b}^k$ et $U\vec{x}^k = \vec{y}^k$.
+\end{enumerate}
+
+\subsubsection{Pivotage partiel}
+
+\textbf{Exemple problématique :}
+\[ 
+A = \begin{pmatrix} 1 & 2 & 3 \\ 2 & 4 & 5 \\ 7 & 8 & 9 \end{pmatrix} \xrightarrow{L_2 \leftarrow L_2 - 2L_1} \tilde{A}^{(2)} = \begin{pmatrix} 1 & 2 & 3 \\ 0 & 0 & -1 \\ \dots & \dots & \dots \end{pmatrix}
+\]
+Ici, le pivot devient nul ($a_{22} = 0$). L'algorithme bloque. On peut (et on doit) échanger les lignes. \\
+Si on fait la même chose pour la matrice $L$, on obtient la résolution via une matrice de permutation $P$ :
+\[ \tilde{L}\tilde{U} = PA \]
+
+\textbf{Résoudre $A\vec{x} = \vec{b}$} devient équivalent à :
+\[ PA\vec{x} = P\vec{b} \iff \tilde{L}\tilde{U}\vec{x} = P\vec{b} \]
+On résout alors : $\tilde{L}\vec{y} = P\vec{b}$ puis $\tilde{U}\vec{x} = \vec{y}$.
+
+\textit{En pratique, pour des raisons de stabilité numérique, on va toujours échanger les lignes de sorte à avoir le plus grand pivot possible en valeur absolue.}
+
+\begin{algorithme}[LU avec changement de pivot]
+\textbf{Entrées :} Matrice $A$, vecteur $\vec{b}$ \\
+\textbf{Initialisation :} $A^{(1)} = A$, $P = I_{n \times n}$, $L = 0_{n \times n}$ \\
+\textbf{Pour} $k = 1, \dots, n-1$ \textbf{faire :}
+\begin{itemize}
+    \item Trouver $i \ge k$ tel que $|a_{ik}^{(k)}|$ soit maximal.
+    \item Échanger les lignes $i$ et $k$ de la matrice $A^{(k)}$, de $L$, et de $P$.
+    \item \textbf{Pour} $i = k+1, \dots, n$ \textbf{faire :}
+    \begin{itemize}
+        \item $l_{ik} = a_{ik}^{(k)} / a_{kk}^{(k)}$
+        \item \textbf{Pour} $j = k+1, \dots, n$ \textbf{faire :}
+        \begin{itemize}
+            \item $a_{ij}^{(k+1)} = a_{ij}^{(k)} - l_{ik} \cdot a_{kj}^{(k)}$
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+\textbf{Fin Pour} \\
+On complète la diagonale : $l_{ii} = 1$ pour tout $i$. \\
+$U$ est la partie triangulaire supérieure de $A^{(n)}$. \\
+\textbf{Résolution :}
+\begin{enumerate}
+    \item Résoudre $L\vec{y} = P\vec{b}$ (Substitution progressive)
+    \item Résoudre $U\vec{x} = \vec{y}$ (Substitution rétrograde)
+\end{enumerate}
+\textbf{Coût computationnel :} $\Theta(n^3)$
+\end{algorithme}
+
+\subsection{Matrice Symétrique Définie Positive (SDP)}
+
+\begin{definition}[Matrice SDP]
+Une matrice $A \in \mathbb{R}^{n \times n}$ est dite Symétrique Définie Positive (SDP) si :
+\begin{enumerate}
+    \item Elle est symétrique : $A^T = A$
+    \item Pour tout vecteur non nul $\vec{x} \in \mathbb{R}^n \setminus \{\vec{0}\}$, on a : $\vec{x}^T A \vec{x} > 0$
+\end{enumerate}
+\end{definition}
+
+\begin{theoreme}[Factorisation de Cholesky]
+Soit $A$ une matrice symétrique définie positive. Alors il existe une unique matrice $L$ triangulaire inférieure à valeurs diagonales strictement positives telle que :
+\[ A = LL^T \]
+\end{theoreme}
+
+Si on veut résoudre $A\vec{x} = \vec{b}$ pour une matrice SDP, on calcule sa factorisation de Cholesky, puis on résout en cascade :
+\[
+\begin{cases}
+L\vec{y} = \vec{b} \\
+L^T\vec{x} = \vec{y}
+\end{cases}
+\]
+
+\subsection{Un exemple d'application : Les moindres carrés}
+
+On considère un système surdéterminé d'équations (plus d'équations que d'inconnues) :
+\[
+\begin{cases}
+a_{11}x_1 + \dots + a_{1n}x_n &= b_1 \\
+\vdots \\
+a_{m1}x_1 + \dots + a_{mn}x_n &= b_m
+\end{cases}
+\]
+Un tel système, noté matriciellement $A\vec{x} = \vec{b}$ avec $A \in \mathbb{R}^{m \times n}$ et $m > n$, n'a généralement \textbf{pas de solution exacte}.
+
+\textbf{Exemple concret :} On cherche à déterminer la position $x(t)$ d'un mobile au cours du temps, en supposant que le modèle est affine $x(t) = vt + x_0$. Si l'on effectue 4 mesures à des instants $t_i$, le système risque fort de ne pas posséder de droite passant exactement par tous les points.
+
+Mais on peut s'intéresser à trouver la "meilleure approximation". On cherche à minimiser l'erreur quadratique, c'est-à-dire trouver $\vec{x}$ qui minimise la norme de l'erreur $\vec{e}$ :
+\[ \min_{\vec{x} \in \mathbb{R}^n} \|\vec{e}\|_2 = \min_{\vec{x} \in \mathbb{R}^n} \|A\vec{x} - \vec{b}\|_2 \]
+où la norme $L_2$ est définie par $\|\vec{v}\|_2 = \left(\sum_{i} v_i^2\right)^{\frac{1}{2}}$. On dit qu'on cherche une solution au sens des \textbf{moindres carrés}.
+
+\begin{theoreme}[Équations normales]
+Soit $A \in \mathbb{R}^{m \times n}$ avec un rang maximal ($\text{rang}(A) = n$, c'est-à-dire que ses colonnes sont linéairement indépendantes ou que $A$ représente une application injective). \\
+Alors il existe un unique vecteur $\vec{x} \in \mathbb{R}^n$ qui minimise la norme $\|A\vec{x} - \vec{b}\|_2$, et ce vecteur est donné par l'unique solution du système carré régulier suivant (appelé équations normales) :
+\[ A^T A \vec{x} = A^T \vec{b} \]
+\end{theoreme}

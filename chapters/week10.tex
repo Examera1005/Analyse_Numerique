@@ -1,0 +1,261 @@
+% ========================================================= 
+\section{Semaine 10 : }
+% =========================================================
+
+\subsection*{Problèmes aux limites unidimensionnels (Semaine 10)}
+
+Il s'agit de trouver $u(x)$ tel que :
+$$
+\begin{cases}
+-u''(x) = f(x) & \text{pour } 0 < x < L \\
+u(0) = \alpha & \\
+u(L) = \beta &
+\end{cases}
+$$
+Ces conditions aux bords sont appelées \textbf{Conditions de Dirichlet}.
+
+\begin{exemple}[Déplacement vertical d'une corde]
+Un exemple classique modélisant l'équation ci-dessus est le déplacement d'une corde de longueur $L$ fixée à ses extrémités (dans ce cas typique, $\alpha = 0$).
+\end{exemple}
+
+\begin{theoreme}[Existence de la solution]
+Si $f$ est continue sur $[0, L]$, alors le problème aux limites admet une solution unique.
+\end{theoreme}
+
+\begin{remarque}
+Bien qu'une solution existe, il n'y a généralement pas de formule analytique pour la trouver explicitement. On cherche donc à l'approximer numériquement.
+\end{remarque}
+
+\subsection{Méthode des différences finies}
+
+On pose un maillage régulier de l'intervalle $[0, L]$ :
+$$0 = x_0 < x_1 < \dots < x_{N+1} = L$$
+avec un pas constant $h = \frac{L}{N+1}$, soit $x_j = j \frac{L}{N+1}$ pour $j = 0, \dots, N+1$.
+
+On cherche à construire des approximations $u_j$ de la solution exacte $u(x_j)$ aux points du maillage pour $j = 0, \dots, N+1$.
+
+On se rappelle, par développement de Taylor, que :
+$$u''(x) = \frac{u(x+h) - 2u(x) + u(x-h)}{h^2} + \mathcal{O}(h^2)$$
+
+On considère le schéma numérique suivant en discrétisant l'opérateur continu :
+$$\frac{-u_{j+1} + 2u_j - u_{j-1}}{h^2} = f(x_j), \quad \text{pour } j=1, \dots, N$$
+Avec les conditions aux limites imposées :
+$$u_0 = \alpha \quad \text{et} \quad u_{N+1} = \beta$$
+
+Évaluons le schéma aux bornes du domaine :
+\begin{itemize}
+    \item \textbf{Pour $j=1$} : le schéma s'écrit $\frac{-u_2 + 2u_1 - u_0}{h^2} = f(x_1)$. En injectant $u_0 = \alpha$, on obtient :
+    $$\frac{-u_2 + 2u_1}{h^2} = f(x_1) + \frac{\alpha}{h^2}$$
+    \item \textbf{Pour $j=N$} : le schéma s'écrit $\frac{-u_{N+1} + 2u_N - u_{N-1}}{h^2} = f(x_N)$. En injectant $u_{N+1} = \beta$, on obtient :
+    $$\frac{2u_N - u_{N-1}}{h^2} = f(x_N) + \frac{\beta}{h^2}$$
+\end{itemize}
+
+Ce schéma numérique peut s'écrire sous forme matricielle $A\vec{u} = \vec{\tilde{f}}$ :
+$$
+\frac{1}{h^2}
+\begin{pmatrix}
+2 & -1 & 0 & \cdots & 0 \\
+-1 & 2 & -1 & \ddots & \vdots \\
+0 & \ddots & \ddots & \ddots & 0 \\
+\vdots & \ddots & -1 & 2 & -1 \\
+0 & \cdots & 0 & -1 & 2
+\end{pmatrix}
+\begin{pmatrix}
+u_1 \\
+u_2 \\
+\vdots \\
+u_{N-1} \\
+u_N
+\end{pmatrix}
+=
+\begin{pmatrix}
+f(x_1) + \frac{\alpha}{h^2} \\
+f(x_2) \\
+\vdots \\
+f(x_{N-1}) \\
+f(x_N) + \frac{\beta}{h^2}
+\end{pmatrix}
+$$
+
+\begin{remarque}
+La matrice $A$ est tridiagonale (avec des $2$ sur la diagonale principale, et des $-1$ sur les diagonales supérieure et inférieure). Elle est \textbf{Symétrique Définie Positive (SDP)}. On peut donc résoudre le système efficacement à l'aide d'une \textbf{factorisation de Cholesky}.
+\end{remarque}
+
+\subsection{Erreur numérique}
+
+On s'intéresse à la norme infinie de l'erreur, définie par :
+$$e := \max_{j=1, \dots, N} |u(x_j) - u_j|$$
+
+\begin{theoreme}[Principe du maximum discret]
+Si $A\vec{u} = \vec{\tilde{f}}$, alors :
+$$\max_{j=1, \dots, N} |u_j| \le \frac{L^2}{8} \max_{j=1, \dots, N} |f(x_j)| + \max(|\alpha|, |\beta|)$$
+\end{theoreme}
+
+\begin{definition}[Erreur de troncature locale]
+Soit $u$ la solution exacte du problème. L'erreur de troncature locale $\tau_j$ en un point $x_j$ évalue à quel point la solution exacte satisfait le schéma numérique. On la définit par :
+$$\frac{-u(x_{j+1}) + 2u(x_j) - u(x_{j-1})}{h^2} = f(x_j) + \tau_j, \quad j=1, \dots, N$$
+\end{definition}
+
+En soustrayant l'équation du schéma numérique de celle de l'erreur de troncature locale, on obtient l'équation régissant l'erreur globale $e_j = u(x_j) - u_j$ :
+$$\frac{-e_{j+1} + 2e_j - e_{j-1}}{h^2} = \tau_j, \quad \text{pour } j=1, \dots, N$$
+Avec $e_0 = 0$ et $e_{N+1} = 0$.
+
+Ceci s'écrit sous la forme vectorielle $A\vec{e} = \vec{\tau}$, où $\vec{e} = (e_1, e_2, \dots, e_N)^T$ et $\vec{\tau} = (\tau_1, \tau_2, \dots, \tau_N)^T$.
+
+Par le théorème précédent (principe du maximum), on déduit directement une borne de stabilité :
+$$\max_{j=1, \dots, N} |e_j| \le \frac{L^2}{8} \max_{j=1, \dots, N} |\tau_j|$$
+
+D'autre part, on sait par le développement de Taylor que l'erreur de troncature est bornée par :
+$$|\tau_j| = \left| \frac{-u(x_{j+1}) + 2u(x_j) - u(x_{j-1})}{h^2} + u''(x_j) \right| \le \frac{h^2}{12} \max_{x \in [0,L]} |u^{(4)}(x)|$$
+si $u \in \mathcal{C}^4([0,L])$.
+
+On a donc montré le théorème fondamental suivant :
+\begin{theoreme}[Convergence du schéma]
+Si $u \in \mathcal{C}^4([0,L])$ est la solution exacte du problème et si $\vec{u}$ est la solution exacte du système linéaire $A\vec{u} = \vec{\tilde{f}}$, alors l'erreur globale satisfait :
+$$\max_{j=1, \dots, N} |u(x_j) - u_j| \le C h^2$$
+avec la constante $C = \frac{L^2}{96} \max_{x \in [0,L]} |u^{(4)}(x)|$.
+\end{theoreme}
+
+\subsection{Conditions aux limites de Neumann}
+
+Considérons maintenant un problème avec une condition de dérivée au bord (Condition de Neumann) :
+$$
+\begin{cases}
+-u''(x) = f(x) & 0 < x < L \\
+u(0) = \alpha & \\
+u'(L) = \beta & \text{(Condition de Neumann)}
+\end{cases}
+$$
+
+\textbf{Question :} Que faire de la condition limite $u'(L) = \beta$ ?
+
+\begin{algorithme}[Méthode du point fantôme]
+On va rajouter une inconnue fictive au-delà du domaine, au point $x_{N+2} = L + h$.
+L'approximation centrée de la dérivée en $x_{N+1} = L$ s'écrit :
+$$u'(L) \approx \frac{u_{N+2} - u_N}{2h} = \beta \quad \implies \quad u_{N+2} = 2h\beta + u_N$$
+
+Le schéma général reste valide pour les nœuds intérieurs :
+$$\frac{-u_{j+1} + 2u_j - u_{j-1}}{h^2} = f(x_j), \quad j=1, \dots, N$$
+Et on évalue ce même schéma au bord $j = N+1$ :
+$$\frac{-u_{N+2} + 2u_{N+1} - u_N}{h^2} = f(x_{N+1})$$
+En substituant $u_{N+2}$ par son expression tirée de la condition de Neumann, on obtient :
+$$\frac{-(2h\beta + u_N) + 2u_{N+1} - u_N}{h^2} = f(x_{N+1}) \implies \frac{2u_{N+1} - 2u_N}{h^2} = f(x_{N+1}) + \frac{2\beta}{h}$$
+En divisant par 2, l'équation s'écrit :
+$$\frac{u_{N+1} - u_N}{h^2} = \frac{1}{2}f(x_{N+1}) + \frac{\beta}{h}$$
+\end{algorithme}
+
+On peut réécrire le schéma sous forme matricielle modifiée, de taille $(N+1) \times (N+1)$ :
+$$
+\frac{1}{h^2}
+\begin{pmatrix}
+2 & -1 & 0 & \cdots & 0 \\
+-1 & 2 & -1 & \ddots & \vdots \\
+0 & \ddots & \ddots & \ddots & 0 \\
+\vdots & \ddots & -1 & 2 & -1 \\
+0 & \cdots & 0 & -1 & 1
+\end{pmatrix}
+\begin{pmatrix}
+u_1 \\
+u_2 \\
+\vdots \\
+u_N \\
+u_{N+1}
+\end{pmatrix}
+=
+\begin{pmatrix}
+f(x_1) + \frac{\alpha}{h^2} \\
+f(x_2) \\
+\vdots \\
+f(x_N) \\
+\frac{1}{2}f(x_{N+1}) + \frac{\beta}{h}
+\end{pmatrix}
+$$
+
+La matrice $\tilde{A}$ reste Symétrique Définie Positive (SDP), on peut donc résoudre ce système linéaire avec la méthode de Cholesky. L'ordre d'approximation reste quadratique : $e := \max_{j=1, \dots, N+1} |u(x_j) - u_j| \le C h^2$.
+
+\subsection{Ajout d'un terme linéaire de réaction}
+
+Considérons l'équation avec un terme supplémentaire :
+$$
+\begin{cases}
+-u''(x) + c(x)u(x) = f(x) & 0 < x < L \\
+u(0) = \alpha & \\
+u(L) = \beta &
+\end{cases}
+$$
+On suppose que $c(x) \ge 0$ pour tout $x \in [0, L]$.
+
+On procède comme précédemment et on considère le schéma :
+$$
+\begin{cases}
+\frac{-u_{j+1} + 2u_j - u_{j-1}}{h^2} + c(x_j)u_j = f(x_j) \quad \text{pour } j=1, \dots, N \\
+u_0 = \alpha \\
+u_{N+1} = \beta
+\end{cases}
+$$
+
+On peut écrire ce système sous la forme $(A + D)\vec{u} = \vec{\tilde{f}}$, où la matrice $A$ et le vecteur $\vec{\tilde{f}}$ sont identiques au problème classique de Dirichlet, et $D$ est la matrice diagonale évaluée aux points du maillage :
+$$
+D = \begin{pmatrix}
+c(x_1) & 0 & \cdots & 0 \\
+0 & c(x_2) & \ddots & \vdots \\
+\vdots & \ddots & \ddots & 0 \\
+0 & \cdots & 0 & c(x_N)
+\end{pmatrix}
+$$
+
+Puisque $c(x) \ge 0 \ \forall x \in [0,L]$, la matrice diagonale $D$ est semi-définie positive. Comme $A$ est SDP, la somme $A + D$ est également Symétrique Définie Positive $\implies$ Résolution par Cholesky.
+
+\subsection{Ajout d'un terme non-linéaire}
+
+Considérons enfin une équation avec une non-linéarité :
+$$
+\begin{cases}
+-u''(x) + c(x, u(x)) = f(x) & 0 < x < L \\
+u(0) = \alpha & \\
+u(L) = \beta &
+\end{cases}
+$$
+On suppose que la dérivée partielle vérifie $\frac{\partial c}{\partial u} \ge 0$.
+
+Le schéma numérique prend la forme non-linéaire :
+$$\frac{-u_{j+1} + 2u_j - u_{j-1}}{h^2} + c(x_j, u_j) = f(x_j), \quad \text{avec } u_0 = \alpha \text{ et } u_{N+1} = \beta$$
+
+Ce qui donne le système de résidus suivant $\vec{F}(\vec{u}) = \vec{0}$ :
+$$
+\begin{cases}
+\frac{2u_1 - u_2}{h^2} + c(x_1, u_1) - f(x_1) - \frac{\alpha}{h^2} = 0 \\
+\frac{-u_1 + 2u_2 - u_3}{h^2} + c(x_2, u_2) - f(x_2) = 0 \\
+\vdots \\
+\frac{-u_{N-1} + 2u_N}{h^2} + c(x_N, u_N) - f(x_N) - \frac{\beta}{h^2} = 0
+\end{cases}
+$$
+
+\begin{algorithme}[Méthode de Newton]
+Pour résoudre le système non-linéaire $\vec{F}(\vec{u}) = \vec{0}$, on utilise la méthode de Newton-Raphson vectorielle.
+Étant donné une itération courante $\vec{u}^k$, on calcule la mise à jour $\vec{u}^{k+1}$ satisfaisant le système linéaire :
+$$DF(\vec{u}^k)(\vec{u}^{k+1} - \vec{u}^k) = -\vec{F}(\vec{u}^k)$$
+\end{algorithme}
+
+En particulier, il faut calculer et inverser la matrice Jacobienne $DF(\vec{u})$. On trouve :
+$$
+DF(\vec{u}) = \frac{1}{h^2}
+\begin{pmatrix}
+2 & -1 & 0 & \cdots \\
+-1 & 2 & -1 & \cdots \\
+0 & -1 & 2 & \ddots \\
+\vdots & \vdots & \ddots & \ddots
+\end{pmatrix}
++
+\begin{pmatrix}
+\frac{\partial c}{\partial u}(x_1, u_1) & 0 & \cdots & 0 \\
+0 & \frac{\partial c}{\partial u}(x_2, u_2) & \ddots & \vdots \\
+\vdots & \ddots & \ddots & 0 \\
+0 & \cdots & 0 & \frac{\partial c}{\partial u}(x_N, u_N)
+\end{pmatrix}
+$$
+
+Si la jacobienne $DF(\vec{u}^k)$ est inversible (ce qui est garanti car $A$ est SDP et la diagonale est non-négative), on peut itérer la méthode de Newton jusqu'à ce que le critère d'arrêt soit satisfait, par exemple :
+$$\|\vec{u}^{k+1} - \vec{u}^k\| < \text{tolérance (ex. } 10^{-7}\text{)}$$
+
+Une fois le critère d'arrêt satisfait, la solution est donnée par $\vec{u} \approx \vec{u}^{k+1}$.

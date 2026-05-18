@@ -1,0 +1,187 @@
+% =========================================================
+\section{Semaine 8 : Équations Différentielles Ordinaires (1er ordre)}
+% =========================================================
+
+\subsection{Introduction et Problème de Cauchy}
+
+On considère des problèmes d'évolution temporelle de la forme suivante :
+
+\begin{definition}[Problème de Cauchy]
+    Trouver une fonction $u : \mathbb{R}_+ \rightarrow \mathbb{R}$ solution du problème de Cauchy :
+    \begin{equation}
+        \tag{*}
+        \begin{cases}
+            \displaystyle \frac{du}{dt}(t) = f(t, u(t)), \quad \text{pour } t > 0 \\[0.3cm]
+            u(0) = u_0 \quad \text{(Condition initiale)}
+        \end{cases}
+    \end{equation}
+    où $f : \mathbb{R}_+ \times \mathbb{R} \rightarrow \mathbb{R}$ est une fonction donnée et $u_0 \in \mathbb{R}$ est une valeur initiale connue.
+\end{definition}
+
+\subsubsection*{Exemples physiques et biologiques}
+
+\begin{exemple}[1. Équation de Newton en 1D]
+    D'après la seconde loi de Newton ($F=ma$), on cherche la vitesse $v(t)$ au temps $t \geq 0$ d'une particule (en supposant la masse $m=1$ pour simplifier) :
+    \[
+    \begin{cases}
+        \displaystyle \frac{dv}{dt}(t) = F(t, v(t)) \\[0.3cm]
+        v(0) = v_0
+    \end{cases}
+    \]
+    Ici, la solution s'écrit sous forme intégrale : $v(t) = v_0 + \int_0^t F(s, v(s))ds$.
+\end{exemple}
+
+\begin{exemple}[2. Évolution d'une population]
+    Soit $u(t)$ le nombre d'individus dans une population au temps $t$. Supposons un taux de croissance proportionnel à la population avec une constante $k > 0$.
+    \[
+    \begin{cases}
+        \displaystyle \frac{du(t)}{dt} = k \, u(t) \\[0.3cm]
+        u(0) = u_0
+    \end{cases}
+    \]
+    La solution exacte est donnée par la loi exponentielle : $u(t) = u_0 e^{kt}$.
+\end{exemple}
+
+\subsection{Existence et Unicité : Exemples et Contre-exemples}
+
+Face au problème (*), deux questions fondamentales se posent :
+\begin{enumerate}
+    \item Est-ce que le problème (*) admet toujours une solution ?
+    \item Est-ce que cette solution est unique ?
+\end{enumerate}
+
+\begin{exemple}[Exemples et pathologiques]
+    \textbf{1) Solution unique et globale :}
+    \[
+    \begin{cases}
+        \frac{du}{dt} = 3u(t) - 3t \\
+        u(0) = 0
+    \end{cases}
+    \implies u(t) = -\frac{1}{3}e^{3t} + t + \frac{1}{3}
+    \]
+    \textit{Cette solution est unique et parfaitement définie pour tout $t > 0$.}
+
+    \vspace{0.2cm}
+    \textbf{2) Perte d'unicité :}
+    \[
+    \begin{cases}
+        \frac{du}{dt} = \sqrt[3]{u(t)}, \quad t > 0 \\
+        u(0) = 0
+    \end{cases}
+    \]
+    Ce système admet plusieurs solutions distinctes : $u_1(t) = 0$, $u_2(t) = \sqrt{\frac{8t^3}{27}}$ et $u_3(t) = -\sqrt{\frac{8t^3}{27}}$.
+
+    \vspace{0.2cm}
+    \textbf{3) Explosion en temps fini :}
+    \[
+    \begin{cases}
+        \frac{du}{dt} = u^2(t), \quad t > 0 \\
+        u(0) = 1
+    \end{cases}
+    \implies u(t) = \frac{1}{1-t}
+    \]
+    \textit{La solution est unique mais elle "explose" au temps $t=1$. Elle n'est pas définie globalement sur $\mathbb{R}_+$.}
+\end{exemple}
+
+\begin{theoreme}[Théorème de Cauchy-Lipschitz]
+    Soit $f : \mathbb{R}_+ \times \mathbb{R} \rightarrow \mathbb{R}$ continue par rapport à ses deux variables. On suppose de plus qu'elle est globalement lipschitzienne par rapport à sa deuxième variable, c'est-à-dire qu'il existe une constante $L \in \mathbb{R}^+$ telle que :
+    \[
+    |f(t,x) - f(t,y)| \leq L |x-y|, \quad \forall t \in \mathbb{R}_+, \forall x,y \in \mathbb{R}
+    \]
+    Alors il existe une \textbf{unique} solution $u(t)$ au problème (*). Elle est définie pour tout $t \geq 0$ (existence globale) et est continûment dérivable.
+\end{theoreme}
+
+\begin{explication}[Analyse des contre-exemples]
+    La condition de Lipschitz est la clé !
+    \begin{itemize}
+        \item Dans le cas 2) ($f(t,u) = \sqrt[3]{u}$), la dérivée par rapport à $u$ tend vers l'infini en $0$. La fonction n'est pas lipschitzienne en $0$, ce qui cause la \textbf{perte d'unicité}.
+        \item Dans le cas 3) ($f(t,u) = u^2$), la dérivée par rapport à $u$ est $2u$, qui n'est pas bornée sur $\mathbb{R}$. La fonction n'est pas globalement lipschitzienne, ce qui explique pourquoi la solution \textbf{explose en temps fini} et n'existe pas globalement pour tout $t \geq 0$.
+    \end{itemize}
+\end{explication}
+
+\subsection{Méthodes Numériques d'Approximation}
+
+Pour résoudre ces problèmes sur un ordinateur, on discrétise l'intervalle d'étude $t \in [0, T]$ en $N$ sous-intervalles.
+Soit le pas de temps $\Delta t = \frac{T}{N}$. Les temps discrets sont $t_n = n \Delta t$ pour $n=0, ..., N$. \\
+On cherche des approximations $u^n \approx u(t_n)$.
+
+\subsubsection{Approche par Dérivation Numérique (Différences Finies)}
+
+\begin{algorithme}[1. Schéma d'Euler Progressif (Explicite)]
+    On approche la dérivée au temps $t_n$ par la différence finie progressive :
+    \[ \frac{du(t_n)}{dt} = f(t_n, u(t_n)) \approx \frac{u^{n+1} - u^n}{\Delta t} \]
+    Ceci amener au schéma direct à calculer :
+    \begin{equation*}
+        \begin{cases}
+            u^{n+1} = u^n + \Delta t \, f(t_n, u^n) \\
+            u^0 = u_0
+        \end{cases}
+    \end{equation*}
+\end{algorithme}
+
+\begin{algorithme}[2. Schéma d'Euler Rétrograde (Implicite)]
+    On écrit l'équation au temps futur $t_{n+1}$ et on utilise une différence finie rétrograde :
+    \[ \frac{du(t_{n+1})}{dt} = f(t_{n+1}, u(t_{n+1})) \approx \frac{u^{n+1} - u^n}{\Delta t} \]
+    Le terme suivant $u^{n+1}$ dépend de lui-même :
+    \begin{equation*}
+        \begin{cases}
+            u^{n+1} - u^n - \Delta t \, f(t_{n+1}, u^{n+1}) = 0 \\
+            u^0 = u_0
+        \end{cases}
+    \end{equation*}
+\end{algorithme}
+
+\begin{explication}[Résolution du schéma implicite]
+    À chaque étape du schéma rétrograde, l'inconnue est $u^{n+1}$. On doit donc résoudre une équation de la forme $g(X) = 0$ avec $g(X) = X - u^n - \Delta t f(t_{n+1}, X)$. \\
+    On utilise typiquement la \textbf{méthode de Newton} pour trouver la racine. On l'initialise avec la valeur $u^n$ (qui est une très bonne approximation de $u^{n+1}$ si $\Delta t$ est petit), ce qui garantit généralement une convergence très rapide.
+\end{explication}
+
+\subsubsection{Approche par Intégration Numérique}
+
+On intègre formellement l'EDO entre $t_n$ et $t_{n+1}$ :
+\[ u(t_{n+1}) - u(t_n) = \int_{t_n}^{t_{n+1}} f(s, u(s))ds \]
+Selon la méthode de quadrature (calcul d'aire) choisie, on retrouve différents schémas :
+
+\begin{itemize}
+    \item \textbf{Point Gauche} (Rectangle gauche) : $\int_{t_n}^{t_{n+1}} f \approx \Delta t f(t_n, u(t_n)) \implies$ \textbf{Euler Explicite}.
+    \item \textbf{Point Droit} (Rectangle droit) : $\int_{t_n}^{t_{n+1}} f \approx \Delta t f(t_{n+1}, u(t_{n+1})) \implies$ \textbf{Euler Implicite}.
+\end{itemize}
+
+\begin{algorithme}[3. Crank-Nicolson]
+    En approchant l'intégrale par la \textbf{méthode des trapèzes}, on obtient :
+    \[ u(t_{n+1}) - u(t_n) \approx \frac{\Delta t}{2} \Big( f(t_n, u(t_n)) + f(t_{n+1}, u(t_{n+1})) \Big) \]
+    C'est un schéma \textbf{implicite} réputée pour sa meilleure stabilité (A-stabilité) :
+    \[ u^{n+1} = u^n + \frac{\Delta t}{2} \Big( f(t_n, u^n) + f(t_{n+1}, u^{n+1}) \Big) \]
+\end{algorithme}
+
+\begin{algorithme}[4. Méthode de Heun (Prédicteur-Correcteur RK2)]
+    Pour se débarrass du caractère implicite de Crank-Nicolson, on remplace le $u^{n+1}$ inconnu par une \textit{prédiction} obtenue via un pas d'Euler explicite : $u^{n+1}_{\text{pred}} = u^n + \Delta t f(t_n, u^n)$.
+    \begin{equation*}
+        \begin{cases}
+            K_1 = f(t_n, u^n) \\[0.15cm]
+            K_2 = f(t_{n+1}, \, u^n + \Delta t K_1) \\[0.15cm]
+            u^{n+1} = u^n + \displaystyle\frac{\Delta t}{2}(K_1 + K_2)
+        \end{cases}
+    \end{equation*}
+    C'est un schéma purement \textbf{explicite} (Runge-Kutta d'ordre 2).
+\end{algorithme}
+
+\begin{algorithme}[5. Méthode de Runge-Kutta 4 (RK4)]
+    On utilise la formule de \textbf{Simpson} pour obtenir un schéma explicite de très haute précision (ordre 4) :
+    \[ \int_{t_n}^{t_{n+1}} f(s, u(s))ds \approx \frac{\Delta t}{6} \Big( f(t_n) + 4f(t_{n+\frac{1}{2}}) + f(t_{n+1}) \Big) \]
+    En évaluant intelligemment les pentes intermédiaires, on construit :
+    \begin{equation*}
+        \begin{cases}
+            K_1 = f(t_n, u^n) \\[0.15cm]
+            K_2 = f\left(t_n + \frac{\Delta t}{2}, \, u^n + \frac{\Delta t}{2} K_1\right) \\[0.3cm]
+            K_3 = f\left(t_n + \frac{\Delta t}{2}, \, u^n + \frac{\Delta t}{2} K_2\right) \\[0.3cm]
+            K_4 = f\left(t_{n+1}, \, u^n + \Delta t K_3\right) \\[0.3cm]
+            u^{n+1} = u^n + \displaystyle \frac{\Delta t}{6} (K_1 + 2K_2 + 2K_3 + K_4)
+        \end{cases}
+    \end{equation*}
+\end{algorithme}
+
+\begin{explication}[Lien entre Simpson et RK4]
+    La formule de Simpson classique accorde les poids $(1, 4, 1)/6$ aux points (gauche, milieu, droit).
+    Dans le schéma RK4, les pentes au point milieu sont échantillonnées deux fois ($K_2$ et $K_3$), d'où les poids respectifs $\frac{1}{6}$, $\frac{2}{6}$, $\frac{2}{6}$, et $\frac{1}{6}$ qui, additionnés, respectent la pondération globale de l'intégration parabolique de Simpson.
+\end{explication}

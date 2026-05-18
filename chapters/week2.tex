@@ -1,0 +1,135 @@
+% =========================================================
+\section{Semaine 2 : Méthode du Point Fixe et Méthode de Newton}
+% =========================================================
+
+\subsection{La Méthode du Point Fixe}
+
+L'objectif de cette méthode est de trouver une racine d'une équation $f(x) = 0$ en la reformulant sous la forme équivalente $x = \Phi(x)$. Le scalaire $x^*$ est appelé \textbf{point fixe} de la fonction $\Phi$.
+
+\begin{definition}[Itération du Point Fixe]
+À partir d'une estimation initiale $x^0$, la suite des approximations successives est définie par la relation de récurrence :
+$$x^{k+1} = \Phi(x^k)$$
+\end{definition}
+
+\begin{theoreme}[(Ostrowski) : Condition de Convergence]
+Soit $x^*$ un point fixe d'une fonction $\Phi$ continûment différentiable ($\Phi \in C^1$). \\
+Si $|\Phi'(x^*)| < 1$, alors il existe un voisinage de $x^*$ tel que, pour tout point de départ $x^0$ choisi dans ce voisinage, la suite définie par $x^{k+1} = \Phi(x^k)$ converge \textbf{linéairement} vers $x^*$.
+\end{theoreme}
+
+\begin{explication}[Factuelle : Critère d'arrêt]
+Dans la pratique, on ne connaît pas $x^*$. Comment savoir quand s'arrêter ? Vos notes étudient la validité de la distance entre deux itérations consécutives : $|x^{k+1} - x^k|$.
+
+Évaluons la distance entre $x^k$ et la vraie solution $x^*$ :
+$$x^k - x^* = x^k - \Phi(x^k) + \Phi(x^k) - \Phi(x^*)$$
+Par approximation au premier ordre de Taylor (ou accroissements finis) autour de $x^k$, on a $\Phi(x^k) - \Phi(x^*) \approx \Phi'(z^k)(x^k - x^*)$. En sachant que $x^{k+1} = \Phi(x^k)$ :
+$$x^k - x^* \approx (x^k - x^{k+1}) + \Phi'(z^k)(x^k - x^*)$$
+$$(1 - \Phi'(z^k))(x^k - x^*) \approx x^k - x^{k+1}$$
+
+On obtient donc l'estimation de l'erreur absolue :
+$$|x^k - x^*| \approx \frac{|x^{k+1} - x^k|}{|1 - \Phi'(z^k)|}$$
+
+\textbf{Conclusion :} Si $|\Phi'(x^*)| \ll 1$, le dénominateur est proche de 1. L'écart $|x^{k+1} - x^k|$ est donc un excellent indicateur mathématique de la véritable erreur $|x^k - x^*|$, ce qui justifie son utilisation comme critère d'arrêt.
+\end{explication}
+
+\begin{algorithme}[Méthode du Point Fixe]
+\begin{verbatim}
+Données : x_0, tol, max_it, Φ
+x = x_0
+k = 0
+inc = tol + 1
+
+Tant que (inc > tol et k < max_it) faire
+    x_new = Φ(x)
+    inc = |x_new - x|
+    x = x_new
+    k = k + 1
+Fin Tant que
+\end{verbatim}
+\end{algorithme}
+
+\subsection{Convergence de la Méthode de Newton (1D)}
+
+La méthode de Newton est une méthode de recherche de zéros ($f(x) = 0$) qui utilise la dérivée pour construire une tangente à chaque itération.
+
+\begin{definition}[Itération de Newton]
+La suite est définie par :
+$$x^{k+1} = x^k - \frac{f(x^k)}{f'(x^k)}$$
+Ceci équivaut à une méthode de point fixe où la fonction d'itération est $\Phi_N(x) = x - \frac{f(x)}{f'(x)}$.
+\end{definition}
+
+\begin{theoreme}[Convergence de Newton]
+Soit $f \in C^2(\mathbb{R})$. Supposons que $f(x^*) = 0$ (racine exacte) et que $f'(x^*) \neq 0$ (la racine est simple). 
+Alors, il existe un voisinage $\delta > 0$ tel que si $x^0 \in [x^* - \delta, x^* + \delta]$ :
+\begin{enumerate}
+    \item La suite $x^k$ converge vers $x^*$.
+    \item La convergence est \textbf{quadratique}.
+\end{enumerate}
+\end{theoreme}
+
+\begin{explication}[Preuve Factuelle 1 : Condition d'Ostrowski]
+Calculons la dérivée de la fonction d'itération $\Phi_N(x)$ en utilisant la règle du quotient :
+$$\Phi_N'(x) = 1 - \frac{f'(x)f'(x) - f(x)f''(x)}{(f'(x))^2} = 1 - 1 + \frac{f(x)f''(x)}{(f'(x))^2} = \frac{f(x)f''(x)}{(f'(x))^2}$$
+Évaluons cette dérivée au point fixe $x^*$ :
+$$\Phi_N'(x^*) = \frac{f(x^*)f''(x^*)}{(f'(x^*))^2}$$
+Puisque par définition $f(x^*) = 0$ et $f'(x^*) \neq 0$, on obtient strictement $\Phi_N'(x^*) = 0$. \\
+Comme $0 < 1$, le théorème d'Ostrowski garantit la convergence locale. Mieux encore, une dérivée nulle au point fixe est la condition mathématique nécessaire pour obtenir une convergence d'ordre supérieur (quadratique).
+\end{explication}
+
+\begin{explication}[Preuve Factuelle 2 : Ordre Quadratique via Taylor]
+Nous voulons démontrer qu'il existe une constante $C > 0$ telle que $|x^{k+1} - x^*| \leq C |x^k - x^*|^2$.
+Exprimons $f(x^*)$ par un développement de Taylor à l'ordre 2 autour de $x^k$ :
+$$f(x^*) = f(x^k) + f'(x^k)(x^* - x^k) + \frac{f''(z^k)}{2}(x^* - x^k)^2 = 0$$
+(où $z^k$ est compris entre $x^k$ et $x^*$). Divisons l'équation par $f'(x^k)$ :
+$$\frac{f(x^k)}{f'(x^k)} + (x^* - x^k) + \frac{f''(z^k)}{2f'(x^k)}(x^* - x^k)^2 = 0$$
+Isolons les termes linéaires :
+$$-\frac{f(x^k)}{f'(x^k)} - x^k + x^* = -\frac{f''(z^k)}{2f'(x^k)}(x^* - x^k)^2$$
+Or, par définition de l'itération de Newton, on sait que $x^{k+1} = x^k - \frac{f(x^k)}{f'(x^k)}$, donc $x^{k+1} - x^k = -\frac{f(x^k)}{f'(x^k)}$. En substituant :
+$$x^{k+1} - x^* = \frac{f''(z^k)}{2f'(x^k)}(x^k - x^*)^2$$
+En passant aux valeurs absolues, on obtient la majoration de l'erreur :
+$$|x^{k+1} - x^*| \leq C |x^k - x^*|^2 \quad \text{avec} \quad C = \frac{\max |f''(x)|}{2 \min |f'(x)|}$$
+\end{explication}
+
+\subsection{Méthode de Newton pour les Systèmes Non Linéaires}
+
+On souhaite maintenant trouver les racines d'un système d'équations (vecteurs de dimension $n$) :
+$$\vec{F}(\vec{x}) = \vec{0} \iff \begin{cases} f_1(x_1, \dots, x_n) = 0 \\ \vdots \\ f_n(x_1, \dots, x_n) = 0 \end{cases}$$
+
+L'approximation linéaire scalaire est remplacée par la matrice \textbf{Jacobienne} de $\vec{F}$, notée $J_F(\vec{x})$.
+
+\begin{definition}[Itération de Newton Multidimensionnelle]
+À chaque étape $k$, l'itération est donnée par :
+$$\vec{x}^{k+1} = \vec{x}^k - [J_F(\vec{x}^k)]^{-1} \vec{F}(\vec{x}^k)$$
+Dans la pratique numérique, on ne calcule jamais l'inverse de la matrice. On résout le système linéaire suivant pour trouver le pas $\vec{y}$ :
+$$J_F(\vec{x}^k) \cdot \vec{y} = -\vec{F}(\vec{x}^k)$$
+Puis on met à jour le vecteur : $\vec{x}^{k+1} = \vec{x}^k + \vec{y}$.
+\end{definition}
+
+\begin{theoreme}
+Soit $\vec{F} : \mathbb{R}^n \to \mathbb{R}^n$ de classe $C^2$, et soit $\vec{x}^*$ tel que $\vec{F}(\vec{x}^*) = \vec{0}$.\\
+Si la matrice Jacobienne $J_F(\vec{x}^*)$ est \textbf{inversible} (déterminant non nul), alors, pour un point de départ $\vec{x}^0$ suffisamment proche, la méthode converge quadratiquement vers $\vec{x}^*$.
+\end{theoreme}
+
+\begin{algorithme}[Newton pour Systèmes Non Linéaires]
+\begin{verbatim}
+Données : x_0 (vecteur), tol, max_it, F (fonction vectorielle)
+x = x_0
+J = J_F(x)             % Évaluation de la Jacobienne initiale
+k = 0
+inc = tol + 1
+
+Tant que (inc > tol et k < max_it) faire
+    % Résolution du système linéaire (ex: x = A\B dans Matlab)
+    y = J \ (-F(x)) 
+
+    % Mise à jour du vecteur
+    x_new = x + y
+
+    % Calcul de l'incrément (norme vectorielle)
+    inc = ||y|| 
+
+    x = x_new
+    J = J_F(x)         % Réévaluation de la Jacobienne
+    k = k + 1
+Fin Tant que
+\end{verbatim}
+\end{algorithme}

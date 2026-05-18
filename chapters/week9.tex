@@ -1,0 +1,81 @@
+% =========================================================
+\section{Semaine 9 : EDOs scalaires et Systèmes}
+% =========================================================
+
+\subsection{Méthodes à 1 pas et Erreur}
+
+\textbf{Rappel :} On considère le problème continu
+\begin{equation}
+\begin{cases}
+    \frac{du}{dt}(t) = f(t, u(t)), \quad t \in (0, T] \\
+    u(0) = u_0
+\end{cases} \label{eq:edo}
+\end{equation}
+
+On partitionne l'intervalle de temps $[0, T]$. Soit $\Delta t = \frac{T}{N}$. On définit les instants discrets :
+$$0 = t_0 < t_1 < \dots < t_n = t_0 + n\Delta t < \dots < t_N = T$$
+
+\begin{definition}[Méthode à 1 pas]
+Une méthode à 1 pas pour approximer la solution de \eqref{eq:edo} est de la forme :
+\begin{equation}
+\frac{u_{n+1} - u_n}{\Delta t} = \Phi_f(u_n, u_{n+1}, t_n, \Delta t)
+\end{equation}
+\end{definition}
+
+\begin{explication}
+Dans le cas d'une méthode explicite, la fonction d'incrément $\Phi_f$ ne dépend pas de $u_{n+1}$.
+\end{explication}
+
+\begin{algorithme}[Fonctions d'incrément classiques]
+    \centering
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Méthode} & $\mathbf{\Phi_f}$ \\
+        \midrule
+        EP (Euler Progressif) & $f(t_n, u_n)$ \\
+        ER (Euler Rétrograde) & $f(t_{n+1}, u_{n+1})$ \\
+        CN (Crank-Nicolson) & $\frac{1}{2}\big(f(t_n, u_n) + f(t_{n+1}, u_{n+1})\big)$ \\
+        Heun & $\frac{1}{2}\big(f(t_n, u_n) + f(t_{n+1}, u_n + \Delta t f(t_n, u_n))\big)$ \\
+        RK4 & $\frac{1}{6}(k_1 + 2k_2 + 2k_3 + k_4)$ \\
+        \bottomrule
+    \end{tabular}
+\end{algorithme}
+
+\begin{definition}[Erreur de troncature locale]
+L'erreur de troncature locale au temps $t_{n+1}$ est définie par :
+\begin{equation}
+\tau_{n+1} = \frac{u(t_{n+1}) - u(t_n)}{\Delta t} - \Phi_f(u(t_n), u(t_{n+1}), t_n, \Delta t)
+\end{equation}
+\end{definition}
+
+\begin{theoreme}[Consistance et Convergence]
+Si $f$ est lipschitzienne par rapport à son second argument et si la méthode est consistante à l'ordre $p$ ($\tau(T) = \mathcal{O}(\Delta t^p)$), alors elle est convergente à l'ordre $p$ ($e(T) = \mathcal{O}(\Delta t^p)$).
+\end{theoreme}
+
+\begin{exemple}[Euler Progressif]
+Pour EP, par développement de Taylor :
+$$ \tau_{n+1} \le \frac{\Delta t}{2} \max_{t \in [0, T]} |u''(t)| $$
+La méthode est donc consistante et convergente à l'ordre 1.
+\end{exemple}
+
+\subsection{Stabilité}
+
+\begin{explication}[Choix des méthodes implicites]
+Considérons $\frac{du}{dt} = -\lambda u$ avec $\lambda > 0$.
+\begin{itemize}
+    \item \textbf{EP} : $u_{n+1} = (1 - \lambda \Delta t)u_n$. Stable ssi $\Delta t < \frac{2}{\lambda}$ (Conditionnelle).
+    \item \textbf{ER} : $u_{n+1} = \frac{1}{1 + \lambda \Delta t} u_n$. Stable $\forall \Delta t > 0$ (Inconditionnelle).
+\end{itemize}
+\end{explication}
+
+\subsection{Systèmes d'EDOs}
+
+Pour $\vec{u}(t) \in \mathbb{R}^k$, on utilise les mêmes schémas sous forme vectorielle. La stabilité pour $\frac{d\vec{u}}{dt} = -A\vec{u}$ dépend des valeurs propres $\lambda_i$ de $A$. EP est stable si $|1 - \Delta t \lambda_i| < 1$ pour toutes les valeurs propres.
+
+\subsection{EDOs d'ordre supérieur}
+
+\begin{algorithme}[Réduction à l'ordre 1]
+On transforme $\frac{d^2u}{dt^2} = f(t, u, u')$ en un système d'ordre 1 en posant $v = u'$ :
+$$ \frac{d}{dt} \begin{pmatrix} u \\ v \end{pmatrix} = \begin{pmatrix} v \\ f(t, u, v) \end{pmatrix} $$
+\end{algorithme}

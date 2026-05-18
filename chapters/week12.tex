@@ -1,0 +1,276 @@
+\section{Semaine 12-Transport et Ondes}
+\subsection{Équation de transport}
+
+On s'intéresse à l'équation aux dérivées partielles (EDP) de transport linéaire du premier ordre pour $0 < x < L$ et $t > 0$ :
+\begin{equation}
+\label{eq:transport}
+\frac{\partial u}{\partial t}(x,t) + c_0 \frac{\partial u}{\partial x}(x,t) = f(x,t)
+\end{equation}
+
+Soumise à la condition initiale :
+\begin{equation*}
+u(x,0) = w(x), \quad x \in [0,L]
+\end{equation*}
+
+Et à une condition aux limites (si $c_0 > 0$) :
+\begin{equation*}
+u(0,t) = g(t), \quad t > 0
+\end{equation*}
+
+Cette équation modélise par exemple le transport d'un polluant le long d'une rivière, dans un tronçon de longueur $L$, avec une vitesse de courant $c_0 > 0$.
+
+\begin{exemple}[Solution exacte pour une source nulle]
+Si $f = 0$, $g = 0$ et $w(x)$ est la source du polluant (telle que $w(0) = 0$), alors la solution de l'équation \eqref{eq:transport} est donnée par :
+\begin{equation*}
+u(x,t) = w(x - c_0 t) \quad \text{pour } x - c_0 t \ge 0
+\end{equation*}
+La solution $u(x,t)$ est simplement la condition initiale qui est \textbf{transportée de gauche à droite} dans le sens du courant à la vitesse $c_0$.
+\end{exemple}
+
+\textbf{Et si $c_0 < 0$ ?} \\
+Le courant va dans l'autre sens, de la droite vers la gauche. La caractéristique de l'équation vient donc de $x=L$ et s'écoule vers $x=0$. Il faut par conséquent imposer une condition limite en $x = L$ au lieu de $x = 0$.
+
+Le problème devient :
+\begin{equation}
+\begin{cases}
+\frac{\partial u}{\partial t}(x,t) + c_0 \frac{\partial u}{\partial x}(x,t) = f(x,t) & \text{pour } x \in (0,L), t>0 \\
+u(x,0) = w(x) & \text{pour } x \in [0,L] \\
+u(L,t) = g(t) & \text{pour } t > 0
+\end{cases}
+\end{equation}
+
+Si $f=0$, $g=0$ et $w(L)=0$, alors $u(x,t) = w(x - c_0 t)$. Puisque $c_0 < 0$, la condition initiale est translatée de \textbf{droite à gauche}.
+
+\subsubsection{Approximation numérique}
+
+On discrétise le domaine spatial et temporel :
+\begin{itemize}
+    \item \textbf{Espace :} $x_j = j h$ pour $j = 0, \dots, N+1$, avec le pas $h = \frac{L}{N+1}$.
+    \item \textbf{Temps :} $0 = t_0 < t_1 < \dots < t_M = T$, avec le pas temporel $\tau = \frac{T}{M}$ (soit $t_n = n \tau$, $n=0, \dots, M$).
+\end{itemize}
+
+On cherche à approcher les valeurs de la fonction continue aux nœuds de ce maillage. On pose :
+\begin{equation*}
+u_j^n \approx u(x_j, t_n)
+\end{equation*}
+Connaissant la condition initiale $u_j^0 = w(x_j)$ pour $j=0, \dots, N+1$, on se pose la question : connaissant $u_j^n$ (à l'instant $t_n$), comment calculer $u_j^{n+1}$ (à l'instant $t_{n+1}$) ?
+
+On écrit l'EDP au temps $t_n$ et au point spatial $x_j$ :
+\begin{equation}
+\frac{\partial u}{\partial t}(x_j, t_n) + c_0 \frac{\partial u}{\partial x}(x_j, t_n) = f(x_j, t_n)
+\end{equation}
+
+On approche la dérivée temporelle par une différence finie progressive (Euler explicite) :
+\begin{equation*}
+\frac{\partial u}{\partial t}(x_j, t_n) \approx \frac{u(x_j, t_{n+1}) - u(x_j, t_n)}{\tau}
+\end{equation*}
+
+\textbf{Question :} Quelle formule de différences finies utiliser pour approximer $\frac{\partial u}{\partial x}$ ?
+
+\subsubsection{Schéma décentré amont (Upwind)}
+
+On utilise un schéma dit \textit{décentré amont} (ou "Upwind"). Ce schéma respecte la direction de propagation de l'information (les caractéristiques) :
+\begin{itemize}
+    \item L'information est transportée de \textbf{gauche à droite si $c_0 > 0$}. On regarde "en arrière" (à gauche).
+    \item L'information est transportée de \textbf{droite à gauche si $c_0 < 0$}. On regarde "en avant" (à droite).
+\end{itemize}
+
+\begin{explication}[Rigidité du choix décentré (Upwind)]
+En analyse numérique, utiliser un schéma centré pour le terme de convection (de type $\frac{u_{j+1}^n - u_{j-1}^n}{2h}$) avec un schéma d'Euler explicite en temps engendre une instabilité inconditionnelle (toute perturbation, même minime, explosera exponentiellement, indépendamment des pas $\tau$ et $h$). Le schéma décentré amont introduit une "viscosité numérique" artificielle qui stabilise le calcul, tant que la condition de Courant-Friedrichs-Lewy (CFL) est respectée.
+\end{explication}
+
+\textbf{Cas $c_0 > 0$ :} \\
+On utilise une différence finie rétrograde en espace :
+\begin{equation*}
+\frac{\partial u}{\partial x}(x_j, t_n) \approx \frac{u(x_j, t_n) - u(x_{j-1}, t_n)}{h}
+\end{equation*}
+Le schéma devient pour $j=1, \dots, N+1$ :
+\begin{equation*}
+\frac{u_j^{n+1} - u_j^n}{\tau} + c_0 \frac{u_j^n - u_{j-1}^n}{h} = f(x_j, t_n)
+\end{equation*}
+Soit, de manière explicite :
+\begin{algorithme}[Schéma décentré pour $c_0 > 0$]
+\begin{align*}
+u_j^{n+1} &= u_j^n - \tau c_0 \frac{u_j^n - u_{j-1}^n}{h} + \tau f(x_j, t_n), \quad \forall j=1, \dots, N+1 \\
+u_0^n &= g(t_n) \quad \text{(condition au bord entrant)}
+\end{align*}
+\end{algorithme}
+
+\textbf{Cas $c_0 < 0$ :} \\
+On utilise une différence finie progressive en espace :
+\begin{equation*}
+\frac{\partial u}{\partial x}(x_j, t_n) \approx \frac{u(x_{j+1}, t_n) - u(x_j, t_n)}{h}
+\end{equation*}
+Le schéma devient pour $j=0, \dots, N$ :
+\begin{equation*}
+\frac{u_j^{n+1} - u_j^n}{\tau} + c_0 \frac{u_{j+1}^n - u_j^n}{h} = f(x_j, t_n)
+\end{equation*}
+Soit, de manière explicite :
+\begin{algorithme}[Schéma décentré pour $c_0 < 0$]
+\begin{align*}
+u_j^{n+1} &= u_j^n - \tau c_0 \frac{u_{j+1}^n - u_j^n}{h} + \tau f(x_j, t_n), \quad \forall j=0, \dots, N \\
+u_{N+1}^n &= g(t_n) \quad \text{(condition au bord entrant)}
+\end{align*}
+\end{algorithme}
+
+\subsubsection{Stabilité}
+
+Considérons le cas homogène : $f=0$ et $g=0$. La solution exacte du problème de transport continu est $u(x,t) = w(x - c_0 t)$.
+Cette solution exacte possède deux propriétés fondamentales :
+\begin{enumerate}
+    \item \textbf{Positivité :} Si la donnée initiale $w(x) \ge 0$, alors $u(x,t) \ge 0$ pour tout $x \in [0,L]$ et $t \ge 0$.
+    \item \textbf{Principe du maximum :} $\max_x |u(x,t)| \le \max_x |w(x)|$. L'amplitude de la solution ne croît pas dans le temps.
+\end{enumerate}
+
+On définit un schéma numérique comme étant \textbf{stable} s'il reproduit numériquement ces propriétés :
+\begin{enumerate}
+    \item Si $u_j^0 \ge 0$ pour $j=0, \dots, N+1$, alors $u_j^{n+1} \ge 0$ pour tout $n$.
+    \item $\max_{j=0,\dots,N+1} |u_j^{n+1}| \le \max_{j=0,\dots,N+1} |u_j^n|$
+\end{enumerate}
+
+\begin{proposition}
+Le schéma décentré amont est stable sous la condition :
+\begin{equation*}
+0 < \tau \le \frac{h}{|c_0|}
+\end{equation*}
+Il s'agit de la célèbre condition de \textbf{Courant-Friedrichs-Lewy (CFL)}.
+\end{proposition}
+
+\textit{Preuve à faire en exercice.}
+
+\begin{explication}[Interprétation physique de la CFL]
+La condition $\tau \le \frac{h}{|c_0|}$ s'écrit aussi $|c_0| \tau \le h$. Physiquement, la distance parcourue par l'onde ou la particule (à vitesse $c_0$) durant un pas de temps $\tau$ ne doit pas dépasser la taille d'une maille spatiale $h$. Si l'information "saute" plusieurs mailles en une seule itération, le schéma numérique à 3 points (qui ne regarde que la maille directement voisine) ne peut pas capter correctement la physique, ce qui mène à une explosion des valeurs (instabilité). Mathématiquement, cela implique que le domaine de dépendance numérique contient strictement le domaine de dépendance continu de l'EDP.
+\end{explication}
+
+\begin{remarque}[Ordre d'erreur du schéma]
+Définissons l'erreur globale maximale :
+\begin{equation*}
+e := \max_{j=0,\dots,N+1} |u(x_j, T) - u_j^M|
+\end{equation*}
+Comme on a utilisé des formules de différences finies d'ordre 1 (aussi bien en espace, décentré, qu'en temps, progressif), l'erreur de troncature se comporte asymptotiquement comme :
+\begin{equation*}
+e = \mathcal{O}(h + \tau)
+\end{equation*}
+Ce schéma est donc consistant d'ordre 1.
+\end{remarque}
+
+\vspace{1cm}
+
+\subsection{Équation des ondes}
+
+On considère l'équation des ondes (hyperbolique du second ordre) :
+\begin{equation}
+\label{eq:ondes}
+\frac{\partial^2 u}{\partial t^2}(x,t) - c^2 \frac{\partial^2 u}{\partial x^2}(x,t) = f(x,t), \quad 0 < x < L, \ t > 0
+\end{equation}
+avec $c > 0$ la vitesse de l'onde.
+
+Le système requiert \textbf{deux conditions initiales} (car c'est une dérivée seconde en temps) :
+\begin{align*}
+u(x,0) &= w(x), \quad 0 < x < L \quad \text{(déplacement initial)} \\
+\frac{\partial u}{\partial t}(x,0) &= v(x), \quad 0 < x < L \quad \text{(vitesse initiale)}
+\end{align*}
+
+Et des \textbf{conditions aux limites} (par exemple de Dirichlet, cordes fixées) :
+\begin{equation*}
+u(0,t) = u(L,t) = 0, \quad t > 0
+\end{equation*}
+
+Cette équation modélise par exemple la déformation d'une corde élastique de longueur $L$ fixée à ses 2 extrémités et soumise à une force $f(x,t)$.
+
+\begin{exemple}[Formule de d'Alembert et Réflexions]
+Si la force est nulle ($f=0$), la vitesse initiale nulle ($v=0$) et les conditions au bord respectées par la condition initiale ($w(0)=w(L)=0$), on peut définir $\tilde{w}$ comme le prolongement de $w$ en une fonction impaire et $2L$-périodique.
+
+Alors, la solution s'écrit selon la formule de d'Alembert :
+\begin{equation*}
+u(x,t) = \frac{1}{2}\Big( \tilde{w}(x-ct) + \tilde{w}(x+ct) \Big)
+\end{equation*}
+Ce comportement représente deux ondes, qui sont transportées de gauche à droite et inversement, et qui \textbf{se réfléchissent} contre les bords $x=0$ et $x=L$.
+
+Par exemple, si $w(x) = \sin\left(\frac{\pi x}{L}\right)$ :
+\begin{equation*}
+u(x,t) = \frac{1}{2} \left[ \sin\left(\frac{\pi(x-ct)}{L}\right) + \sin\left(\frac{\pi(x+ct)}{L}\right) \right] = \sin\left(\frac{\pi x}{L}\right)\cos\left(\frac{\pi c t}{L}\right)
+\end{equation*}
+Ceci représente une onde stationnaire (oscillation pure dans le temps modulant la condition initiale).
+\end{exemple}
+
+\subsubsection{Schéma numérique (Différences finies centrées)}
+
+On procède à la même discrétisation que précédemment : $x_j = j h$ et $t_n = n \tau$, avec $j = 1, \dots, N$. On cherche à calculer les approximations $u_j^n \approx u(x_j, t_n)$.
+
+Pour le problème des ondes, on utilise des formules de différences finies \textbf{centrées} à la fois pour $\frac{\partial^2}{\partial t^2}$ et pour $\frac{\partial^2 u}{\partial x^2}$. L'équation s'écrit donc numériquement :
+
+\begin{equation*}
+\frac{u_j^{n+1} - 2u_j^n + u_j^{n-1}}{\tau^2} - c^2 \frac{u_{j+1}^n - 2u_j^n + u_{j-1}^n}{h^2} = f(x_j, t_n)
+\end{equation*}
+
+Avec les conditions aux limites appliquées directement :
+\begin{equation*}
+u_0^n = 0 \quad \text{et} \quad u_{N+1}^n = 0 \quad \forall n
+\end{equation*}
+
+En réarrangeant pour exprimer le pas de temps futur, on obtient un schéma explicite à 3 niveaux de temps (souvent appelé schéma \textit{leapfrog} ou saute-mouton) :
+\begin{equation}
+\label{eq:ondes_schema}
+u_j^{n+1} = 2u_j^n - u_j^{n-1} + \left(\frac{c \tau}{h}\right)^2 \left( u_{j+1}^n - 2u_j^n + u_{j-1}^n \right) + \tau^2 f(x_j, t_n)
+\end{equation}
+
+Avec cette récurrence, on peut calculer $u_j^{n+1}$ \textbf{connaissant $u_j^n$ et $u_j^{n-1}$}.
+
+Cependant, à l'initialisation du problème, nous connaissons :
+\begin{itemize}
+    \item $u_j^0 = w(x_j)$ (Position initiale)
+    \item $u_0^0 = u_{N+1}^0 = 0$
+\end{itemize}
+\textbf{Question :} Comment calculer la première itération $u_j^1$ (au temps $t_1$) vu qu'il nous manque $u_j^{-1}$ ?
+
+\subsubsection{Traitement de la vitesse initiale (Point fictif)}
+
+Au temps $t_0 = 0$ (soit $n=0$), si l'on écrit naïvement le schéma \eqref{eq:ondes_schema}, on fait intervenir un point temporel fictif $t_{-1} = -\tau$ :
+\begin{equation*}
+\frac{u_j^1 - 2u_j^0 + u_j^{-1}}{\tau^2} - c^2 \frac{u_{j+1}^0 - 2u_j^0 + u_{j-1}^0}{h^2} = f(x_j, 0)
+\end{equation*}
+
+Pour remplacer $u_j^{-1}$ dans ce schéma, on utilise la condition initiale sur la dérivée, $\frac{\partial u}{\partial t}(x_j, 0) = v(x_j)$. Pour maintenir une précision d'ordre $\mathcal{O}(\tau^2)$, on discrétise cette vitesse initiale par une \textbf{différence finie centrée} :
+\begin{equation*}
+\frac{\partial u}{\partial t}(x_j, 0) \approx \frac{u(x_j, t_1) - u(x_j, t_{-1})}{2\tau}
+\end{equation*}
+On considère dans ce schéma que $\frac{u_j^1 - u_j^{-1}}{2\tau} = v(x_j)$, ce qui nous donne l'expression du point fictif :
+\begin{equation*}
+u_j^{-1} = u_j^1 - 2\tau v(x_j)
+\end{equation*}
+
+On substitue cette relation dans notre schéma pour $n=0$ :
+\begin{equation*}
+\frac{u_j^1 - 2u_j^0 + \Big(u_j^1 - 2\tau v(x_j)\Big)}{\tau^2} - c^2 \frac{u_{j+1}^0 - 2u_j^0 + u_{j-1}^0}{h^2} = f(x_j, 0)
+\end{equation*}
+
+Ce qui se simplifie en groupant les termes en $u_j^1$ :
+\begin{algorithme}[Initialisation du schéma de l'équation des ondes]
+Pour calculer le premier pas $u_j^1$ (pour $j=1, \dots, N$) avec une précision $\mathcal{O}(\tau^2 + h^2)$ :
+\begin{equation*}
+u_j^1 = u_j^0 + \tau v(x_j) + \frac{1}{2}\left(\frac{c\tau}{h}\right)^2 \Big( u_{j+1}^0 - 2u_j^0 + u_{j-1}^0 \Big) + \frac{\tau^2}{2} f(x_j, 0)
+\end{equation*}
+Avec les conditions aux limites $u_0^1 = u_{N+1}^1 = 0$.
+\end{algorithme}
+
+Avec ceci, on peut calculer $u_j^1$ pour $j=1, \dots, N$. Étant donnés $u_j^0$ et $u_j^1$, la récurrence explicite standard \eqref{eq:ondes_schema} permet de calculer la solution à tous les temps $t_n$.
+
+\subsubsection{Stabilité et Erreur (Équation des ondes)}
+
+\begin{remarque}[Condition de Stabilité]
+Pour le schéma explicite de l'équation des ondes, on peut montrer par une analyse de Fourier (analyse de von Neumann) que le schéma est \textbf{stable si et seulement si} le nombre de Courant satisfait :
+\begin{equation*}
+\nu = \frac{c \tau}{h} \le 1 \quad \iff \quad \tau \le \frac{h}{c}
+\end{equation*}
+Cette CFL stricte traduit le fait, là encore, que la vitesse de propagation numérique $\frac{h}{\tau}$ doit être supérieure ou égale à la vitesse de propagation physique de l'onde $c$.
+\end{remarque}
+
+\begin{explication}[Erreur de Consistance]
+L'erreur globale du schéma est définie par $e := \max_{j,n} |u(x_j, t_n) - u_j^n|$.
+Comme nous avons employé des différences finies centrées d'ordre 2, aussi bien pour la dérivée seconde spatiale que pour la dérivée seconde temporelle, l'erreur du schéma se comporte de la manière suivante :
+\begin{equation*}
+e = \mathcal{O}(h^2 + \tau^2)
+\end{equation*}
+Ce qui fait de cette méthode un schéma consistant d'ordre 2 en espace et en temps.
+\end{explication}
