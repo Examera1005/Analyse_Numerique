@@ -1,6 +1,6 @@
 # Analyse Numérique
 
-Ce dépôt contient une retranscription en **LaTeX** de notes de cours d'Analyse Numérique.
+Ce dépôt contient une retranscription en **LaTeX** de notes de cours d'Analyse Numérique de printemps 2026.
 
 ## Contenu
 
