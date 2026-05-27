@@ -36,7 +36,7 @@ Donc pour $h$ assez petit, une bonne approximation de $f'(x_0)$ devrait être :
     \coordinate (XM) at (1, 0.7);
     \coordinate (XP) at (3, 2.3);
     
-    \filldraw (X0) circle (1pt) node[below right] {$f(x_0)$};
+    \filldraw (X0) circle (1pt) node[above left] {$f(x_0)$};
     \filldraw (XM) circle (1pt) node[above left] {$f(x_0-h)$};
     \filldraw (XP) circle (1pt) node[above left] {$f(x_0+h)$};
     
@@ -44,7 +44,7 @@ Donc pour $h$ assez petit, une bonne approximation de $f'(x_0)$ devrait être :
     \draw[dashed] (2,0) node[below] {$x_0$} -- (X0);
     \draw[dashed] (3,0) node[below] {$x_0+h$} -- (XP);
     
-    \draw[blue, dashed] (1, 0.3) -- (3, 2.3) node[right, font=\footnotesize] {droite de pente $\frac{f(x_0+h)-f(x_0)}{h}$};
+    \draw[green!60!black, dashed] (1, 0.3) -- (3, 2.3) node[right, font=\footnotesize] {droite de pente $\frac{f(x_0+h)-f(x_0)}{h}$};
     \draw[blue, dashed] (0, 0.1) -- (2, 1.3) node[below right, font=\footnotesize] {droite de pente $\frac{f(x_0)-f(x_0-h)}{h}$};
     \draw[purple, dashed] (0, -0.1) -- (3.5, 2.7) node[right, font=\footnotesize] {droite de pente $\frac{f(x_0+h)-f(x_0-h)}{2h}$};
 \end{tikzpicture}
